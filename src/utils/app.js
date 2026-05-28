@@ -6,6 +6,8 @@ import {
     setMute, 
     getMute 
 } from './audio.js';
+import { setAmbient, setAmbientVolume, getAmbient, getAmbientVolume } from './ambient.js';
+import { requestNotificationPermission, getNotificationPermission, fireNotification } from './notifications.js';
 import { navigate } from 'astro:transitions/client';
 import { languages } from './translations.js';
 
@@ -34,6 +36,7 @@ window.broslunasState = window.broslunasState || {
     activeThemeIndex: 0,
     customTheme: null,
     alarms: [],
+    ambient: { type: 'off', volume: 0.4 },
     stopwatch: {
         isRunning: false,
         startTime: 0,
@@ -44,29 +47,28 @@ window.broslunasState = window.broslunasState || {
     pomodoro: {
         isRunning: false,
         isBreak: false,
-        focusDuration: 25, // minutos
-        breakDuration: 5,  // minutos
-        timeLeft: 25 * 60,  // segundos
+        focusDuration: 25,
+        breakDuration: 5,
+        timeLeft: 25 * 60,
         interval: null
     },
     timer: {
         isRunning: false,
-        duration: 1800,  // 30 min (segundos)
+        duration: 1800,
         timeLeft: 1800,
         interval: null
     },
-    worldClock: {
-        selectedTimezone: 'Europe/London',
-        offsetMs: 0,
-        isLoading: false,
-        errorMessage: '',
-        availableTimezones: []
-    },
+    worldClocks: [
+        { timezone: 'Europe/Madrid', offsetMs: 0, label: 'Madrid' }
+    ],
     loopsInitialized: false
 };
 
 const state = window.broslunasState;
 
+// ──────────────────────────────────────────────────────────────
+// FLIP CARD ENGINE
+// ──────────────────────────────────────────────────────────────
 let soundThrottleTimeout = null;
 function triggerFlipSoundThrottled() {
     if (soundThrottleTimeout || !state.isMechSounds || state.isMuted) return;
@@ -76,7 +78,6 @@ function triggerFlipSoundThrottled() {
     }, 40);
 }
 
-// --- ACTUALIZADOR DE TARJETAS FLIP ---
 function updateCardIfNeeded(cardId, newValue) {
     const card = document.getElementById(cardId);
     if (!card) return;
@@ -104,7 +105,9 @@ function updateCardIfNeeded(cardId, newValue) {
     });
 }
 
-// --- PERSISTENCIA LOCAL STORAGE ---
+// ──────────────────────────────────────────────────────────────
+// PERSISTENCIA LOCAL STORAGE
+// ──────────────────────────────────────────────────────────────
 function loadSavedState() {
     try {
         const saved = localStorage.getItem('apple_flip_clock_state');
@@ -117,10 +120,17 @@ function loadSavedState() {
             state.activeThemeIndex = parsed.activeThemeIndex ?? 0;
             state.customTheme = parsed.customTheme ?? null;
             state.alarms = parsed.alarms ?? [];
-            
-            if (parsed.worldClock) {
-                state.worldClock.selectedTimezone = parsed.worldClock.selectedTimezone ?? 'Europe/London';
-                state.worldClock.offsetMs = parsed.worldClock.offsetMs ?? 0;
+            state.ambient = parsed.ambient ?? { type: 'off', volume: 0.4 };
+
+            if (parsed.worldClocks && Array.isArray(parsed.worldClocks)) {
+                state.worldClocks = parsed.worldClocks;
+            } else if (parsed.worldClock) {
+                // Migrate from old single world clock format
+                state.worldClocks = [{
+                    timezone: parsed.worldClock.selectedTimezone ?? 'Europe/Madrid',
+                    offsetMs: parsed.worldClock.offsetMs ?? 0,
+                    label: (parsed.worldClock.selectedTimezone ?? 'Europe/Madrid').split('/').pop().replace(/_/g, ' ')
+                }];
             }
             
             setMute(state.isMuted);
@@ -140,10 +150,8 @@ function saveState() {
             activeThemeIndex: state.activeThemeIndex,
             customTheme: state.customTheme,
             alarms: state.alarms,
-            worldClock: {
-                selectedTimezone: state.worldClock.selectedTimezone,
-                offsetMs: state.worldClock.offsetMs
-            }
+            ambient: state.ambient,
+            worldClocks: state.worldClocks
         };
         localStorage.setItem('apple_flip_clock_state', JSON.stringify(toSave));
     } catch (e) {
@@ -151,7 +159,9 @@ function saveState() {
     }
 }
 
-// --- MANEJO DE TEMAS ---
+// ──────────────────────────────────────────────────────────────
+// TEMAS
+// ──────────────────────────────────────────────────────────────
 function applyTheme(theme) {
     document.documentElement.style.setProperty('--bg-gradient', theme.bg);
     document.documentElement.style.setProperty('--flip-bg', theme.card);
@@ -174,14 +184,21 @@ function applyCustomTheme(custom) {
     saveState();
 }
 
-// --- SISTEMA DE ALARMAS ---
-function addAlarm(hr, min, label) {
+// ──────────────────────────────────────────────────────────────
+// SISTEMA DE ALARMAS
+// ──────────────────────────────────────────────────────────────
+
+// Days of week: 0=Mon, 1=Tue, ..., 6=Sun (ISO)
+function addAlarm(hr, min, label, recurrence = 'once', customDays = []) {
     const newAlarm = {
         id: Date.now().toString(),
         hour: hr,
         minute: min,
-        label: label || "Alarma",
-        active: true
+        label: label || t.alarm_triggered_label_default,
+        active: true,
+        recurrence, // 'once' | 'daily' | 'weekdays' | 'weekends' | 'custom'
+        customDays,  // array of 0-6 (Mon=0) for 'custom' recurrence
+        firedToday: false
     };
     state.alarms.push(newAlarm);
     saveState();
@@ -212,6 +229,16 @@ function updateActiveAlarmBadge() {
     badge.style.display = activeCount > 0 ? 'inline-block' : 'none';
 }
 
+function getRecurrenceLabel(alarm) {
+    switch (alarm.recurrence) {
+        case 'daily':    return `🔁 ${t.alarm_rec_daily}`;
+        case 'weekdays': return `🔁 ${t.alarm_rec_weekdays}`;
+        case 'weekends': return `🔁 ${t.alarm_rec_weekends}`;
+        case 'custom':   return `🔁 ${(alarm.customDays || []).map(d => (t.alarm_days_short || [])[d] || d).join(' ')}`;
+        default:         return '';
+    }
+}
+
 function drawAlarmsList() {
     const list = document.getElementById('sidebar-alarms-list');
     if (!list) return;
@@ -228,11 +255,12 @@ function drawAlarmsList() {
         
         const hrStr = String(alarm.hour).padStart(2, '0');
         const minStr = String(alarm.minute).padStart(2, '0');
+        const recLabel = getRecurrenceLabel(alarm);
 
         item.innerHTML = `
             <div class="alarm-info">
                 <span class="alarm-time">${hrStr}:${minStr}</span>
-                <span class="alarm-lbl">${alarm.label}</span>
+                <span class="alarm-lbl">${alarm.label}${recLabel ? ` <em style="font-size:0.72em;opacity:0.6">${recLabel}</em>` : ''}</span>
             </div>
             <div class="alarm-actions">
                 <input type="checkbox" class="alarm-toggle" ${alarm.active ? 'checked' : ''} data-id="${alarm.id}" />
@@ -256,7 +284,9 @@ function drawAlarmsList() {
     });
 }
 
-// --- DISPARADOR DE OVERLAY DE ALARMA ---
+// ──────────────────────────────────────────────────────────────
+// ALARM TRIGGER & OVERLAY
+// ──────────────────────────────────────────────────────────────
 let triggeredAlarmData = null;
 function triggerAlarm(alarm) {
     triggeredAlarmData = alarm;
@@ -274,6 +304,12 @@ function triggerAlarm(alarm) {
 
     if (overlay) overlay.style.display = 'flex';
     startAlarmSound();
+
+    // System notification when page is in background
+    fireNotification(
+        t.notifications_alarm_title,
+        alarm.label || t.alarm_triggered_label_default
+    );
 }
 
 function dismissAlarm() {
@@ -282,9 +318,15 @@ function dismissAlarm() {
     if (overlay) overlay.style.display = 'none';
 
     if (triggeredAlarmData && triggeredAlarmData.id) {
-        if (state.alarms.some(a => a.id === triggeredAlarmData.id)) {
-            const activeAlarm = state.alarms.find(a => a.id === triggeredAlarmData.id);
-            if (activeAlarm) activeAlarm.active = false;
+        const alarm = state.alarms.find(a => a.id === triggeredAlarmData.id);
+        if (alarm) {
+            if (alarm.recurrence === 'once') {
+                // Deactivate one-time alarms after firing
+                alarm.active = false;
+            } else {
+                // Mark as fired today so it doesn't re-fire this minute
+                alarm.firedToday = true;
+            }
             saveState();
             drawAlarmsList();
             updateActiveAlarmBadge();
@@ -307,7 +349,10 @@ function snoozeAlarm() {
             hour: snoozeTime.getHours(),
             minute: snoozeTime.getMinutes(),
             label: `${t.alarm_snoozed_prefix}${triggeredAlarmData.label}`,
-            active: true
+            active: true,
+            recurrence: 'once',
+            customDays: [],
+            firedToday: false
         };
         
         state.alarms.push(snoozeAlarmObj);
@@ -318,9 +363,39 @@ function snoozeAlarm() {
     triggeredAlarmData = null;
 }
 
-// Chequeo de alarmas cada minuto
+// Recurring alarm day check
+function alarmShouldFireToday(alarm) {
+    const now = new Date();
+    // JS getDay: 0=Sun, 1=Mon, ..., 6=Sat
+    // We use: 0=Mon, ..., 5=Sat, 6=Sun
+    const jsDay = now.getDay();
+    const isoDay = jsDay === 0 ? 6 : jsDay - 1; // Convert to Mon=0
+
+    switch (alarm.recurrence) {
+        case 'once':     return true;
+        case 'daily':    return true;
+        case 'weekdays': return isoDay <= 4; // Mon-Fri
+        case 'weekends': return isoDay >= 5; // Sat-Sun
+        case 'custom':   return (alarm.customDays || []).includes(isoDay);
+        default:         return true;
+    }
+}
+
+// Reset firedToday at midnight
+let lastMidnightReset = -1;
+function checkMidnightReset() {
+    const now = new Date();
+    const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+    if (dayOfYear !== lastMidnightReset) {
+        lastMidnightReset = dayOfYear;
+        state.alarms.forEach(alarm => { alarm.firedToday = false; });
+        saveState();
+    }
+}
+
 let lastCheckedMinute = -1;
 function checkAlarms() {
+    checkMidnightReset();
     const now = new Date();
     const currentHour = now.getHours();
     const currentMin = now.getMinutes();
@@ -329,13 +404,21 @@ function checkAlarms() {
     lastCheckedMinute = currentMin;
 
     state.alarms.forEach(alarm => {
-        if (alarm.active && alarm.hour === currentHour && alarm.minute === currentMin) {
+        if (
+            alarm.active &&
+            !alarm.firedToday &&
+            alarm.hour === currentHour &&
+            alarm.minute === currentMin &&
+            alarmShouldFireToday(alarm)
+        ) {
             triggerAlarm(alarm);
         }
     });
 }
 
-// --- VISTA 1: CONTROLADOR DE RELOJ ---
+// ──────────────────────────────────────────────────────────────
+// VISTA 1: RELOJ CLÁSICO
+// ──────────────────────────────────────────────────────────────
 function updateClock() {
     if (state.activeView !== 'clock') return;
 
@@ -344,7 +427,8 @@ function updateClock() {
     const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
     const dateEl = document.getElementById('clock-date');
     if (dateEl) {
-        dateEl.textContent = now.toLocaleDateString(currentLang === 'en' ? 'en-US' : 'es-ES', dateOptions).toUpperCase();
+        const locale = currentLang === 'en' ? 'en-US' : currentLang === 'fr' ? 'fr-FR' : currentLang === 'pt' ? 'pt-BR' : currentLang === 'de' ? 'de-DE' : 'es-ES';
+        dateEl.textContent = now.toLocaleDateString(locale, dateOptions).toUpperCase();
     }
 
     let hours = now.getHours();
@@ -383,99 +467,42 @@ function updateClock() {
     }
 }
 
-// --- VISTA 5: CONTROLADOR RELOJ MUNDIAL ---
+// ──────────────────────────────────────────────────────────────
+// VISTA 5: MÚLTIPLES RELOJES MUNDIALES
+// ──────────────────────────────────────────────────────────────
 const majorTimezones = [
-    "Africa/Cairo",
-    "Africa/Johannesburg",
-    "Africa/Lagos",
-    "Africa/Nairobi",
-    "America/Argentina/Buenos_Aires",
-    "America/Bogota",
-    "America/Caracas",
-    "America/Chicago",
-    "America/Denver",
-    "America/Los_Angeles",
-    "America/Mexico_City",
-    "America/New_York",
-    "America/Santiago",
-    "America/Sao_Paulo",
-    "Asia/Bangkok",
-    "Asia/Dubai",
-    "Asia/Hong_Kong",
-    "Asia/Jakarta",
-    "Asia/Jerusalem",
-    "Asia/Kolkata",
-    "Asia/Manila",
-    "Asia/Riyadh",
-    "Asia/Seoul",
-    "Asia/Shanghai",
-    "Asia/Singapore",
-    "Asia/Tokyo",
-    "Atlantic/Azores",
-    "Australia/Adelaide",
-    "Australia/Brisbane",
-    "Australia/Melbourne",
-    "Australia/Perth",
-    "Australia/Sydney",
-    "Europe/Amsterdam",
-    "Europe/Athens",
-    "Europe/Berlin",
-    "Europe/Brussels",
-    "Europe/Budapest",
-    "Europe/Dublin",
-    "Europe/Istanbul",
-    "Europe/Lisbon",
-    "Europe/London",
-    "Europe/Madrid",
-    "Europe/Moscow",
-    "Europe/Paris",
-    "Europe/Rome",
-    "Europe/Vienna",
-    "Europe/Warsaw",
-    "Europe/Zurich",
-    "Pacific/Auckland",
-    "Pacific/Honolulu"
+    "Africa/Cairo", "Africa/Johannesburg", "Africa/Lagos", "Africa/Nairobi",
+    "America/Argentina/Buenos_Aires", "America/Bogota", "America/Caracas",
+    "America/Chicago", "America/Denver", "America/Los_Angeles",
+    "America/Mexico_City", "America/New_York", "America/Santiago",
+    "America/Sao_Paulo", "Asia/Bangkok", "Asia/Dubai", "Asia/Hong_Kong",
+    "Asia/Jakarta", "Asia/Jerusalem", "Asia/Kolkata", "Asia/Manila",
+    "Asia/Riyadh", "Asia/Seoul", "Asia/Shanghai", "Asia/Singapore",
+    "Asia/Tokyo", "Atlantic/Azores", "Australia/Adelaide", "Australia/Brisbane",
+    "Australia/Melbourne", "Australia/Perth", "Australia/Sydney",
+    "Europe/Amsterdam", "Europe/Athens", "Europe/Berlin", "Europe/Brussels",
+    "Europe/Budapest", "Europe/Dublin", "Europe/Istanbul", "Europe/Lisbon",
+    "Europe/London", "Europe/Madrid", "Europe/Moscow", "Europe/Paris",
+    "Europe/Rome", "Europe/Vienna", "Europe/Warsaw", "Europe/Zurich",
+    "Pacific/Auckland", "Pacific/Honolulu"
 ];
 
-async function fetchTimezoneTime(timezone) {
-    state.worldClock.selectedTimezone = timezone;
-    state.worldClock.isLoading = true;
-    state.worldClock.errorMessage = '';
-    
-    const loader = document.getElementById('timezone-loader');
-    if (loader) loader.style.display = 'block';
-    
-    const refreshBtn = document.getElementById('timezone-refresh');
-    if (refreshBtn) refreshBtn.disabled = true;
+let availableTimezones = [];
 
+async function fetchTimezoneTime(timezone, clockEntry) {
+    clockEntry.isLoading = true;
+    
     try {
         const response = await fetch(`https://timeapi.io/api/Time/current/zone?timeZone=${encodeURIComponent(timezone)}`);
-        if (!response.ok) {
-            throw new Error(`Error de red: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         
-        const year = data.year;
-        const month = data.month;
-        const day = data.day;
-        const hour = data.hour;
-        const minute = data.minute;
-        const seconds = data.seconds;
-        const milliSeconds = data.milliSeconds || 0;
-
-        const apiLocalRepresentation = new Date(year, month - 1, day, hour, minute, seconds, milliSeconds);
-        state.worldClock.offsetMs = apiLocalRepresentation.getTime() - Date.now();
-        
-        saveState();
-
-        const titleEl = document.getElementById('timezone-title');
-        if (titleEl) {
-            titleEl.textContent = timezone.replace(/_/g, ' ');
-        }
+        const apiLocal = new Date(data.year, data.month - 1, data.day, data.hour, data.minute, data.seconds, data.milliSeconds || 0);
+        clockEntry.offsetMs = apiLocal.getTime() - Date.now();
+        clockEntry.timezone = timezone;
+        clockEntry.label = timezone.split('/').pop().replace(/_/g, ' ');
     } catch (e) {
-        console.warn("Failed to fetch timezone time from API:", e);
-        state.worldClock.errorMessage = t.wc_sync_error;
-        
+        console.warn("TimeAPI error, falling back to Intl:", e);
         try {
             const formatter = new Intl.DateTimeFormat('en-US', {
                 timeZone: timezone,
@@ -483,99 +510,145 @@ async function fetchTimezoneTime(timezone) {
                 hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false
             });
             const parts = formatter.formatToParts(new Date());
-            const partMap = {};
-            parts.forEach(p => partMap[p.type] = p.value);
-            
-            const apiLocalRepresentation = new Date(
-                parseInt(partMap.year),
-                parseInt(partMap.month) - 1,
-                parseInt(partMap.day),
-                parseInt(partMap.hour),
-                parseInt(partMap.minute),
-                parseInt(partMap.second)
-            );
-            state.worldClock.offsetMs = apiLocalRepresentation.getTime() - Date.now();
+            const pm = {};
+            parts.forEach(p => pm[p.type] = p.value);
+            const apiLocal = new Date(+pm.year, +pm.month - 1, +pm.day, +pm.hour, +pm.minute, +pm.second);
+            clockEntry.offsetMs = apiLocal.getTime() - Date.now();
         } catch (err) {
-            state.worldClock.offsetMs = 0;
+            clockEntry.offsetMs = 0;
         }
     } finally {
-        state.worldClock.isLoading = false;
-        if (loader) loader.style.display = 'none';
-        if (refreshBtn) refreshBtn.disabled = false;
-        updateWorldClockDisplay();
+        clockEntry.isLoading = false;
+        saveState();
+        renderWorldClocks();
     }
 }
 
-function updateWorldClockDisplay() {
-    if (state.activeView !== 'world-clock') return;
-
-    const now = new Date(Date.now() + state.worldClock.offsetMs);
-    
-    const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
-    const dateEl = document.getElementById('world-clock-date');
-    if (dateEl) {
-        dateEl.textContent = now.toLocaleDateString(currentLang === 'en' ? 'en-US' : 'es-ES', dateOptions).toUpperCase();
-    }
-
-    let hours = now.getHours();
-    let ampm = hours >= 12 ? 'PM' : 'AM';
-    
-    if (!state.format24h) {
-        hours = hours % 12 || 12;
-    }
-
-    const hStr = String(hours).padStart(2, '0');
+function getTimeStringForClock(clockEntry) {
+    const now = new Date(Date.now() + clockEntry.offsetMs);
+    let h = now.getHours();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    if (!state.format24h) h = h % 12 || 12;
+    const hStr = String(h).padStart(2, '0');
     const mStr = String(now.getMinutes()).padStart(2, '0');
     const sStr = String(now.getSeconds()).padStart(2, '0');
+    return { hStr, mStr, sStr, ampm, full: `${hStr}:${mStr}` };
+}
 
-    updateCardIfNeeded('wc-h1', hStr[0]);
-    updateCardIfNeeded('wc-h2', hStr[1]);
-    updateCardIfNeeded('wc-m1', mStr[0]);
-    updateCardIfNeeded('wc-m2', mStr[1]);
+function getDateStringForClock(clockEntry) {
+    const now = new Date(Date.now() + clockEntry.offsetMs);
+    const localeCode = currentLang === 'en' ? 'en-US' : currentLang === 'fr' ? 'fr-FR' : currentLang === 'pt' ? 'pt-BR' : currentLang === 'de' ? 'de-DE' : 'es-ES';
+    return now.toLocaleDateString(localeCode, { weekday: 'short', day: 'numeric', month: 'short' }).toUpperCase();
+}
 
-    const sGroup = document.getElementById('world-clock-s-group');
-    const sColon = document.getElementById('world-clock-s-colon');
+// Render the multi-clock grid (replaces old single-clock flip display)
+function renderWorldClocks() {
+    if (state.activeView !== 'world-clock') return;
+    const grid = document.getElementById('world-clocks-grid');
+    if (!grid) return;
 
-    if (state.showSeconds) {
-        if (sGroup) sGroup.style.display = 'flex';
-        if (sColon) sColon.style.display = 'block';
-        updateCardIfNeeded('wc-s1', sStr[0]);
-        updateCardIfNeeded('wc-s2', sStr[1]);
-    } else {
-        if (sGroup) sGroup.style.display = 'none';
-        if (sColon) sColon.style.display = 'none';
-    }
+    grid.innerHTML = '';
+    state.worldClocks.forEach((clockEntry, idx) => {
+        const timeData = getTimeStringForClock(clockEntry);
+        const dateStr = getDateStringForClock(clockEntry);
 
-    const ampmEl = document.getElementById('world-clock-ampm');
-    if (ampmEl) {
-        ampmEl.textContent = ampm;
-        ampmEl.style.display = state.format24h ? 'none' : 'block';
+        const card = document.createElement('div');
+        card.className = 'world-clock-card';
+        card.setAttribute('data-idx', idx);
+
+        card.innerHTML = `
+            <div class="wc-card-header">
+                <div class="wc-card-location">${clockEntry.label || clockEntry.timezone.replace(/_/g, ' ')}</div>
+                <div class="wc-card-actions">
+                    ${state.worldClocks.length > 1 ? `
+                    <button class="wc-remove-btn" title="${t.wc_remove}" data-idx="${idx}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>` : ''}
+                </div>
+            </div>
+            <div class="wc-card-time" id="wc-time-${idx}">
+                <span class="wc-hours">${timeData.hStr}</span>
+                <span class="wc-colon">:</span>
+                <span class="wc-minutes">${timeData.mStr}</span>
+                ${state.showSeconds ? `<span class="wc-colon-s">:</span><span class="wc-seconds">${timeData.sStr}</span>` : ''}
+                ${!state.format24h ? `<span class="wc-ampm">${timeData.ampm}</span>` : ''}
+            </div>
+            <div class="wc-card-date">${dateStr}</div>
+        `;
+
+        card.querySelector('.wc-remove-btn')?.addEventListener('click', () => {
+            state.worldClocks.splice(idx, 1);
+            saveState();
+            renderWorldClocks();
+            updateAddClockButton();
+        });
+
+        grid.appendChild(card);
+    });
+}
+
+// Tick: update all world clock times every second
+function updateWorldClocks() {
+    if (state.activeView !== 'world-clock') return;
+    const grid = document.getElementById('world-clocks-grid');
+    if (!grid) return;
+
+    state.worldClocks.forEach((clockEntry, idx) => {
+        const timeEl = document.getElementById(`wc-time-${idx}`);
+        if (!timeEl) return;
+        const timeData = getTimeStringForClock(clockEntry);
+
+        const hoursEl = timeEl.querySelector('.wc-hours');
+        const minsEl = timeEl.querySelector('.wc-minutes');
+        const secsEl = timeEl.querySelector('.wc-seconds');
+        const ampmEl = timeEl.querySelector('.wc-ampm');
+        const colonS = timeEl.querySelector('.wc-colon-s');
+
+        if (hoursEl) hoursEl.textContent = timeData.hStr;
+        if (minsEl) minsEl.textContent = timeData.mStr;
+
+        if (state.showSeconds) {
+            if (!secsEl) {
+                // Add seconds if not present
+                renderWorldClocks();
+                return;
+            }
+            secsEl.textContent = timeData.sStr;
+        }
+        if (ampmEl) ampmEl.textContent = timeData.ampm;
+    });
+}
+
+function updateAddClockButton() {
+    const addBtn = document.getElementById('wc-add-btn');
+    if (addBtn) {
+        addBtn.disabled = state.worldClocks.length >= 6;
+        addBtn.title = state.worldClocks.length >= 6 ? t.wc_max_reached : t.wc_add_timezone;
+        addBtn.textContent = t.wc_add_timezone;
     }
 }
 
-// --- VISTA 2: CONTROLADOR CRONÓMETRO ---
+// ──────────────────────────────────────────────────────────────
+// VISTA 2: CRONÓMETRO
+// ──────────────────────────────────────────────────────────────
 function drawStopwatch() {
     const time = state.stopwatch.elapsedTime;
-    
     const mins = Math.floor(time / 60000);
     const secs = Math.floor((time % 60000) / 1000);
     const ms = Math.floor((time % 1000) / 10);
 
-    const mStr = String(mins).padStart(2, '0');
-    const sStr = String(secs).padStart(2, '0');
-    const msStr = String(ms).padStart(2, '0');
-
-    updateCardIfNeeded('sw-m1', mStr[0]);
-    updateCardIfNeeded('sw-m2', mStr[1]);
-    updateCardIfNeeded('sw-s1', sStr[0]);
-    updateCardIfNeeded('sw-s2', sStr[1]);
-    updateCardIfNeeded('sw-ms1', msStr[0]);
-    updateCardIfNeeded('sw-ms2', msStr[1]);
+    updateCardIfNeeded('sw-m1', String(mins).padStart(2, '0')[0]);
+    updateCardIfNeeded('sw-m2', String(mins).padStart(2, '0')[1]);
+    updateCardIfNeeded('sw-s1', String(secs).padStart(2, '0')[0]);
+    updateCardIfNeeded('sw-s2', String(secs).padStart(2, '0')[1]);
+    updateCardIfNeeded('sw-ms1', String(ms).padStart(2, '0')[0]);
+    updateCardIfNeeded('sw-ms2', String(ms).padStart(2, '0')[1]);
 }
 
 function runStopwatchLoop() {
-    const now = Date.now();
-    state.stopwatch.elapsedTime = now - state.stopwatch.startTime;
+    state.stopwatch.elapsedTime = Date.now() - state.stopwatch.startTime;
     drawStopwatch();
 }
 
@@ -590,34 +663,27 @@ function drawLapsList() {
     const list = document.getElementById('laps-list');
     if (!list) return;
     list.innerHTML = '';
-
     state.stopwatch.laps.forEach(lap => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${t.sw_btn_lap} ${lap.num}</td>
-            <td>+${formatTimeMs(lap.delta)}</td>
-            <td>${formatTimeMs(lap.total)}</td>
-        `;
+        tr.innerHTML = `<td>${t.sw_btn_lap} ${lap.num}</td><td>+${formatTimeMs(lap.delta)}</td><td>${formatTimeMs(lap.total)}</td>`;
         list.appendChild(tr);
     });
 }
 
-// --- VISTA 3: CONTROLADOR POMODORO ---
+// ──────────────────────────────────────────────────────────────
+// VISTA 3: POMODORO
+// ──────────────────────────────────────────────────────────────
 function drawPomodoro() {
     const minutes = Math.floor(state.pomodoro.timeLeft / 60);
     const seconds = state.pomodoro.timeLeft % 60;
 
-    const mStr = String(minutes).padStart(2, '0');
-    const sStr = String(seconds).padStart(2, '0');
-
-    updateCardIfNeeded('pom-m1', mStr[0]);
-    updateCardIfNeeded('pom-m2', mStr[1]);
-    updateCardIfNeeded('pom-s1', sStr[0]);
-    updateCardIfNeeded('pom-s2', sStr[1]);
+    updateCardIfNeeded('pom-m1', String(minutes).padStart(2, '0')[0]);
+    updateCardIfNeeded('pom-m2', String(minutes).padStart(2, '0')[1]);
+    updateCardIfNeeded('pom-s1', String(seconds).padStart(2, '0')[0]);
+    updateCardIfNeeded('pom-s2', String(seconds).padStart(2, '0')[1]);
 
     const totalDuration = (state.pomodoro.isBreak ? state.pomodoro.breakDuration : state.pomodoro.focusDuration) * 60;
     const pct = state.pomodoro.timeLeft / totalDuration;
-    
     const bar = document.getElementById('pom-progress-bar');
     if (bar) {
         const sizeFactor = window.innerWidth <= 600 ? 477 : (window.innerWidth <= 900 ? 691 : 848);
@@ -627,14 +693,25 @@ function drawPomodoro() {
 
 function triggerPomodoroEnd() {
     const pom = state.pomodoro;
+    const wasBreak = pom.isBreak;
     const nextBreakState = !pom.isBreak;
+    
+    const label = wasBreak
+        ? `${t.pom_break_end_title} ${t.pom_break_end_desc}`
+        : `${t.pom_focus_end_title} ${t.pom_focus_end_desc}`;
     
     triggerAlarm({
         id: 'pomodoro-system',
         hour: new Date().getHours(),
         minute: new Date().getMinutes(),
-        label: pom.isBreak ? `${t.pom_break_end_title} ${t.pom_break_end_desc}` : `${t.pom_focus_end_title} ${t.pom_focus_end_desc}`
+        label
     });
+
+    // System notification
+    fireNotification(
+        wasBreak ? t.notifications_pomodoro_break : t.notifications_pomodoro_focus,
+        wasBreak ? t.pom_break_end_desc : t.pom_focus_end_desc
+    );
 
     pom.isBreak = nextBreakState;
     pom.timeLeft = (pom.isBreak ? pom.breakDuration : pom.focusDuration) * 60;
@@ -661,31 +738,28 @@ function triggerPomodoroEnd() {
 }
 
 function runPomodoroTick() {
-    const pom = state.pomodoro;
-    if (pom.timeLeft <= 0) {
+    if (state.pomodoro.timeLeft <= 0) {
         triggerPomodoroEnd();
         return;
     }
-    pom.timeLeft--;
+    state.pomodoro.timeLeft--;
     drawPomodoro();
 }
 
-// --- VISTA 4: CONTROLADOR TEMPORIZADOR (TIMER) ---
+// ──────────────────────────────────────────────────────────────
+// VISTA 4: TEMPORIZADOR
+// ──────────────────────────────────────────────────────────────
 function drawTimer() {
     const hours = Math.floor(state.timer.timeLeft / 3600);
     const minutes = Math.floor((state.timer.timeLeft % 3600) / 60);
     const seconds = state.timer.timeLeft % 60;
 
-    const hStr = String(hours).padStart(2, '0');
-    const mStr = String(minutes).padStart(2, '0');
-    const sStr = String(seconds).padStart(2, '0');
-
-    updateCardIfNeeded('tm-h1', hStr[0]);
-    updateCardIfNeeded('tm-h2', hStr[1]);
-    updateCardIfNeeded('tm-m1', mStr[0]);
-    updateCardIfNeeded('tm-m2', mStr[1]);
-    updateCardIfNeeded('tm-s1', sStr[0]);
-    updateCardIfNeeded('tm-s2', sStr[1]);
+    updateCardIfNeeded('tm-h1', String(hours).padStart(2, '0')[0]);
+    updateCardIfNeeded('tm-h2', String(hours).padStart(2, '0')[1]);
+    updateCardIfNeeded('tm-m1', String(minutes).padStart(2, '0')[0]);
+    updateCardIfNeeded('tm-m2', String(minutes).padStart(2, '0')[1]);
+    updateCardIfNeeded('tm-s1', String(seconds).padStart(2, '0')[0]);
+    updateCardIfNeeded('tm-s2', String(seconds).padStart(2, '0')[1]);
 
     const pct = state.timer.timeLeft / state.timer.duration;
     const bar = document.getElementById('timer-progress-bar');
@@ -704,6 +778,9 @@ function triggerTimerEnd() {
         label: t.timer_finished
     });
 
+    // System notification
+    fireNotification(t.notifications_timer, '');
+
     tm.timeLeft = tm.duration;
     tm.isRunning = false;
     clearInterval(tm.interval);
@@ -720,21 +797,20 @@ function triggerTimerEnd() {
 }
 
 function runTimerTick() {
-    const tm = state.timer;
-    if (tm.timeLeft <= 0) {
+    if (state.timer.timeLeft <= 0) {
         triggerTimerEnd();
         return;
     }
-    tm.timeLeft--;
+    state.timer.timeLeft--;
     drawTimer();
 }
 
-// --- AJUSTES Y BINDEOS LATERALES ---
+// ──────────────────────────────────────────────────────────────
+// SETTINGS & SIDEBAR HELPERS
+// ──────────────────────────────────────────────────────────────
 function toggleSettings() {
     const settingsSidebar = document.getElementById('settings-sidebar');
-    if (settingsSidebar) {
-        settingsSidebar.classList.toggle('open');
-    }
+    if (settingsSidebar) settingsSidebar.classList.toggle('open');
     const toast = document.getElementById('toast-tip');
     if (toast) toast.style.opacity = '0';
 }
@@ -755,7 +831,6 @@ function updateMuteUI() {
     if (!sidebarMuteBtn) return;
     const volOnIcon = sidebarMuteBtn.querySelector('.vol-icon-on');
     const volOffIcon = sidebarMuteBtn.querySelector('.vol-icon-off');
-
     if (state.isMuted) {
         if (volOnIcon) volOnIcon.style.display = 'none';
         if (volOffIcon) volOffIcon.style.display = 'block';
@@ -767,70 +842,120 @@ function updateMuteUI() {
     }
 }
 
-// ==========================================
-// INITIALIZATION AND PAGE EVENT BINDINGS
-// ==========================================
+// ──────────────────────────────────────────────────────────────
+// AMBIENT SOUND UI BINDING
+// ──────────────────────────────────────────────────────────────
+function setupAmbientUI() {
+    const container = document.getElementById('ambient-controls');
+    if (!container) return;
 
+    // Sync buttons
+    container.querySelectorAll('.ambient-btn').forEach(btn => {
+        const type = btn.getAttribute('data-ambient');
+        btn.classList.toggle('active', type === state.ambient.type);
+        btn.onclick = () => {
+            state.ambient.type = type;
+            saveState();
+            setAmbient(type, state.ambient.volume);
+            container.querySelectorAll('.ambient-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        };
+    });
+
+    // Volume slider
+    const slider = document.getElementById('ambient-volume-slider');
+    if (slider) {
+        slider.value = Math.round(state.ambient.volume * 100);
+        slider.oninput = (e) => {
+            const vol = parseInt(e.target.value) / 100;
+            state.ambient.volume = vol;
+            setAmbientVolume(vol);
+            saveState();
+        };
+    }
+
+    // Restore ambient on page load
+    if (state.ambient.type !== 'off') {
+        setAmbient(state.ambient.type, state.ambient.volume);
+    }
+}
+
+// ──────────────────────────────────────────────────────────────
+// NOTIFICATIONS UI BINDING
+// ──────────────────────────────────────────────────────────────
+function setupNotificationsUI() {
+    const btn = document.getElementById('notifications-enable-btn');
+    const statusEl = document.getElementById('notifications-status');
+    if (!btn || !statusEl) return;
+
+    function updateNotifUI() {
+        const perm = getNotificationPermission();
+        if (perm === 'granted') {
+            statusEl.textContent = t.notifications_granted;
+            statusEl.style.color = '#30d158';
+            btn.style.display = 'none';
+        } else if (perm === 'denied') {
+            statusEl.textContent = t.notifications_denied;
+            statusEl.style.color = '#ff453a';
+            btn.style.display = 'none';
+        } else {
+            statusEl.textContent = '';
+            btn.style.display = 'block';
+        }
+    }
+
+    updateNotifUI();
+
+    btn.onclick = async () => {
+        await requestNotificationPermission();
+        updateNotifUI();
+    };
+}
+
+// ──────────────────────────────────────────────────────────────
+// ONE-TIME INITIALIZATION
+// ──────────────────────────────────────────────────────────────
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
-// --- ONE-TIME INITIALIZATION (Runs once per session) ---
 if (!state.loopsInitialized) {
     loadSavedState();
     
-    // Background Loops
+    // Background loops
     setInterval(() => {
         updateClock();
-        updateWorldClockDisplay();
+        updateWorldClocks();
         checkAlarms();
     }, 200);
 
-    // Document / Window Level Listeners (Only register once!)
+    // Document-level keydown (registered once)
     window.addEventListener('keydown', (e) => {
         const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
         if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') return;
 
         const key = e.key.toLowerCase();
 
-        // Alarm overlay handlers
         if (triggeredAlarmData) {
             if (key === 'd' || key === 'escape' || key === 'enter') {
-                e.preventDefault();
-                dismissAlarm();
-                return;
+                e.preventDefault(); dismissAlarm(); return;
             }
             if (key === 's') {
-                e.preventDefault();
-                snoozeAlarm();
-                return;
+                e.preventDefault(); snoozeAlarm(); return;
             }
         }
 
-        // Sidebar and Settings
-        if (key === 'h' || key === 'escape') {
-            e.preventDefault();
-            toggleSidebar();
-            return;
-        }
-        if (key === '.') {
-            e.preventDefault();
-            toggleSettings();
-            return;
-        }
+        if (key === 'h' || key === 'escape') { e.preventDefault(); toggleSidebar(); return; }
+        if (key === '.') { e.preventDefault(); toggleSettings(); return; }
 
-        // Fullscreen
         if (key === 'f') {
             e.preventDefault();
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.warn("Fullscreen error:", err);
-                });
+                document.documentElement.requestFullscreen().catch(() => {});
             } else {
-                if (document.exitFullscreen) document.exitFullscreen();
+                document.exitFullscreen?.();
             }
             return;
         }
 
-        // Mute
         if (key === 'm') {
             e.preventDefault();
             state.isMuted = !state.isMuted;
@@ -840,71 +965,36 @@ if (!state.loopsInitialized) {
             return;
         }
 
-        // View Navigations (Router-friendly!)
-        const prefix = currentLang === 'en' ? '/en' : '';
-        if (key === '1' || key === 'c') {
-            e.preventDefault();
-            navigate(`${prefix}/`);
-            return;
-        }
-        if (key === '2' || key === 's') {
-            e.preventDefault();
-            navigate(`${prefix}/stopwatch`);
-            return;
-        }
-        if (key === '3' || key === 'p') {
-            e.preventDefault();
-            navigate(`${prefix}/pomodoro`);
-            return;
-        }
-        if (key === '4' || key === 't') {
-            e.preventDefault();
-            navigate(`${prefix}/timer`);
-            return;
-        }
-        if (key === '5' || key === 'w') {
-            e.preventDefault();
-            navigate(`${prefix}/world-clock`);
-            return;
-        }
+        const prefix = currentLang === 'en' ? '/en' : currentLang === 'fr' ? '/fr' : currentLang === 'pt' ? '/pt' : currentLang === 'de' ? '/de' : '';
+        if (key === '1' || key === 'c') { e.preventDefault(); navigate(`${prefix}/`); return; }
+        if (key === '2') { e.preventDefault(); navigate(`${prefix}/stopwatch`); return; }
+        if (key === '3' || key === 'p') { e.preventDefault(); navigate(`${prefix}/pomodoro`); return; }
+        if (key === '4') { e.preventDefault(); navigate(`${prefix}/timer`); return; }
+        if (key === '5' || key === 'w') { e.preventDefault(); navigate(`${prefix}/world-clock`); return; }
 
-        // Play/Pause Action (Space)
         if (e.key === ' ') {
             e.preventDefault();
-            if (state.activeView === 'stopwatch') {
-                document.getElementById('sw-start-btn')?.click();
-            } else if (state.activeView === 'pomodoro') {
-                document.getElementById('pom-start-btn')?.click();
-            } else if (state.activeView === 'timer') {
-                document.getElementById('timer-start-btn')?.click();
-            }
+            if (state.activeView === 'stopwatch') document.getElementById('sw-start-btn')?.click();
+            else if (state.activeView === 'pomodoro') document.getElementById('pom-start-btn')?.click();
+            else if (state.activeView === 'timer') document.getElementById('timer-start-btn')?.click();
             return;
         }
 
-        // Reset Action (R)
         if (key === 'r') {
             e.preventDefault();
-            if (state.activeView === 'stopwatch') {
-                document.getElementById('sw-reset-btn')?.click();
-            } else if (state.activeView === 'pomodoro') {
-                document.getElementById('pom-reset-btn')?.click();
-            } else if (state.activeView === 'timer') {
-                document.getElementById('timer-reset-btn')?.click();
-            }
+            if (state.activeView === 'stopwatch') document.getElementById('sw-reset-btn')?.click();
+            else if (state.activeView === 'pomodoro') document.getElementById('pom-reset-btn')?.click();
+            else if (state.activeView === 'timer') document.getElementById('timer-reset-btn')?.click();
             return;
         }
 
-        // Lap Action (L)
         if (key === 'l') {
             e.preventDefault();
-            if (state.activeView === 'stopwatch') {
-                document.getElementById('sw-lap-btn')?.click();
-            }
+            if (state.activeView === 'stopwatch') document.getElementById('sw-lap-btn')?.click();
             return;
         }
     });
 
-    // Close sidebar click outside
     document.addEventListener('click', (e) => {
         const sidebar = document.getElementById('app-sidebar');
         const hamburgerBtn = document.getElementById('hamburger-btn');
@@ -915,7 +1005,6 @@ if (!state.loopsInitialized) {
         }
     });
 
-    // 3D Parallax tilt
     document.addEventListener('mousemove', (e) => {
         const target = document.getElementById('parallax-target');
         if (!target || isTouchDevice) return;
@@ -937,88 +1026,65 @@ if (!state.loopsInitialized) {
     state.loopsInitialized = true;
 }
 
-// --- SETUP RUNS ON EVERY PAGE TRANSITION (astro:page-load) ---
+// ──────────────────────────────────────────────────────────────
+// PER-PAGE-LOAD SETUP (runs on every Astro view transition)
+// ──────────────────────────────────────────────────────────────
 document.addEventListener('astro:page-load', () => {
-    // 0. Update active language based on pathname
-    currentLang = window.location.pathname.includes('/en') ? 'en' : 'es';
-    t = languages[currentLang];
-
-    // 1. Determine active view based on url path
+    // 0. Detect language
     const path = window.location.pathname;
-    if (path === '/' || path === '/en' || path === '/en/' || path.endsWith('/index.html') || path.endsWith('/en/index.html')) {
-        state.activeView = 'clock';
-    } else if (path.includes('/world-clock')) {
-        state.activeView = 'world-clock';
-    } else if (path.includes('/stopwatch')) {
-        state.activeView = 'stopwatch';
-    } else if (path.includes('/pomodoro')) {
-        state.activeView = 'pomodoro';
-    } else if (path.includes('/timer')) {
-        state.activeView = 'timer';
-    }
+    if (path.startsWith('/en')) currentLang = 'en';
+    else if (path.startsWith('/fr')) currentLang = 'fr';
+    else if (path.startsWith('/pt')) currentLang = 'pt';
+    else if (path.startsWith('/de')) currentLang = 'de';
+    else currentLang = 'es';
+    t = languages[currentLang] || languages.es;
 
-    // Update Keyboard Tip Toast dynamic translation
+    // 1. Determine active view
+    if (path === '/' || /^\/(en|fr|pt|de)\/?$/.test(path)) state.activeView = 'clock';
+    else if (path.includes('/world-clock')) state.activeView = 'world-clock';
+    else if (path.includes('/stopwatch')) state.activeView = 'stopwatch';
+    else if (path.includes('/pomodoro')) state.activeView = 'pomodoro';
+    else if (path.includes('/timer')) state.activeView = 'timer';
+
+    // Toast
     const toast = document.getElementById('toast-tip');
-    if (toast) {
-        toast.innerHTML = t.toast_hint_html;
-    }
+    if (toast) toast.innerHTML = t.toast_hint_html;
 
-    // 2. Sync Sidebar link states
+    // 2. Sync Sidebar active state
     document.querySelectorAll('.menu-item[data-view]').forEach(item => {
-        const itemVal = item.getAttribute('data-view');
-        if (itemVal === state.activeView) {
-            item.classList.add('active');
-        } else {
-            item.classList.remove('active');
-        }
+        item.classList.toggle('active', item.getAttribute('data-view') === state.activeView);
     });
 
-    // Auto collapse sidebar in mobile when navigating
+    // Auto-collapse sidebar on mobile
     const sidebar = document.getElementById('app-sidebar');
     if (sidebar && sidebar.classList.contains('open') && window.innerWidth <= 600) {
         toggleSidebar();
     }
 
-    // 3. Apply Current Theme
-    if (state.customTheme) {
-        applyTheme(state.customTheme);
-    } else {
-        applyTheme(themes[state.activeThemeIndex]);
+    // 3. Apply theme
+    if (state.customTheme) applyTheme(state.customTheme);
+    else applyTheme(themes[state.activeThemeIndex] || themes[0]);
+
+    // 4. Settings Panel bindings
+    const format24hCB = document.getElementById('setting-format-24h');
+    if (format24hCB) {
+        format24hCB.checked = state.format24h;
+        format24hCB.onchange = (e) => { state.format24h = e.target.checked; saveState(); updateClock(); renderWorldClocks(); };
     }
 
-    // 4. Bind Settings Panel Event Listeners
-    const format24hCheckbox = document.getElementById('setting-format-24h');
-    if (format24hCheckbox) {
-        format24hCheckbox.checked = state.format24h;
-        format24hCheckbox.onchange = (e) => {
-            state.format24h = e.target.checked;
-            saveState();
-            updateClock();
-            updateWorldClockDisplay();
-        };
+    const showSecondsCB = document.getElementById('setting-show-seconds');
+    if (showSecondsCB) {
+        showSecondsCB.checked = state.showSeconds;
+        showSecondsCB.onchange = (e) => { state.showSeconds = e.target.checked; saveState(); updateClock(); renderWorldClocks(); };
     }
 
-    const showSecondsCheckbox = document.getElementById('setting-show-seconds');
-    if (showSecondsCheckbox) {
-        showSecondsCheckbox.checked = state.showSeconds;
-        showSecondsCheckbox.onchange = (e) => {
-            state.showSeconds = e.target.checked;
-            saveState();
-            updateClock();
-            updateWorldClockDisplay();
-        };
+    const mechSoundsCB = document.getElementById('setting-mech-sounds');
+    if (mechSoundsCB) {
+        mechSoundsCB.checked = state.isMechSounds;
+        mechSoundsCB.onchange = (e) => { state.isMechSounds = e.target.checked; saveState(); };
     }
 
-    const mechSoundsCheckbox = document.getElementById('setting-mech-sounds');
-    if (mechSoundsCheckbox) {
-        mechSoundsCheckbox.checked = state.isMechSounds;
-        mechSoundsCheckbox.onchange = (e) => {
-            state.isMechSounds = e.target.checked;
-            saveState();
-        };
-    }
-
-    // Themes selection list setup
+    // Themes grid
     const grid = document.getElementById('presets-grid');
     if (grid) {
         grid.innerHTML = '';
@@ -1038,7 +1104,7 @@ document.addEventListener('astro:page-load', () => {
         });
     }
 
-    // Custom Theme Builder binding
+    // Custom theme builder
     const applyCustomBtn = document.getElementById('apply-custom-theme-btn');
     if (applyCustomBtn) {
         applyCustomBtn.onclick = () => {
@@ -1047,73 +1113,96 @@ document.addEventListener('astro:page-load', () => {
             const cardColor = document.getElementById('custom-card-color').value;
             const textColor = document.getElementById('custom-text-color').value;
             const opacity = parseInt(document.getElementById('custom-card-opacity').value) / 100;
-
             const r = parseInt(cardColor.slice(1, 3), 16);
             const g = parseInt(cardColor.slice(3, 5), 16);
             const b = parseInt(cardColor.slice(5, 7), 16);
-            const cardRgba = `rgba(${r}, ${g}, ${b}, ${opacity})`;
-
-            const custom = {
+            applyCustomTheme({
                 name: "Personalizado",
                 bg: `linear-gradient(135deg, ${bg1}, ${bg2})`,
-                card: cardRgba,
+                card: `rgba(${r}, ${g}, ${b}, ${opacity})`,
                 text: textColor,
                 pageText: textColor,
                 accent: textColor
-            };
-            applyCustomTheme(custom);
+            });
         };
     }
 
-    // 5. Alarms list setup & Bindings
+    // 5. Alarms
+    // Recurrence select binding
+    const recurrenceSelect = document.getElementById('alarm-recurrence');
+    const customDaysRow = document.getElementById('alarm-custom-days-row');
+    if (recurrenceSelect && customDaysRow) {
+        recurrenceSelect.onchange = () => {
+            customDaysRow.style.display = recurrenceSelect.value === 'custom' ? 'flex' : 'none';
+        };
+        customDaysRow.style.display = recurrenceSelect.value === 'custom' ? 'flex' : 'none';
+    }
+
     const addAlarmBtn = document.getElementById('add-alarm-btn');
     if (addAlarmBtn) {
         addAlarmBtn.onclick = () => {
             const hrInput = document.getElementById('alarm-hour');
             const minInput = document.getElementById('alarm-minute');
             const lblInput = document.getElementById('alarm-label');
-
+            const recSel = document.getElementById('alarm-recurrence');
+            
             let hr = parseInt(hrInput.value);
             let min = parseInt(minInput.value);
             let label = lblInput.value.trim();
+            let recurrence = recSel ? recSel.value : 'once';
+            let customDays = [];
+
+            if (recurrence === 'custom') {
+                document.querySelectorAll('.day-toggle-btn.selected').forEach(btn => {
+                    customDays.push(parseInt(btn.getAttribute('data-day')));
+                });
+            }
 
             if (isNaN(hr) || hr < 0 || hr > 23 || isNaN(min) || min < 0 || min > 59) {
                 alert(t.validation_invalid_time);
                 return;
             }
 
-            addAlarm(hr, min, label);
-
+            addAlarm(hr, min, label, recurrence, customDays);
             hrInput.value = '';
             minInput.value = '';
             lblInput.value = '';
+            if (recSel) recSel.value = 'once';
+            document.querySelectorAll('.day-toggle-btn').forEach(btn => btn.classList.remove('selected'));
+            if (customDaysRow) customDaysRow.style.display = 'none';
         };
     }
 
-    // Bind Language Toggles
+    // Day toggle buttons for custom recurrence
+    document.querySelectorAll('.day-toggle-btn').forEach(btn => {
+        btn.onclick = () => btn.classList.toggle('selected');
+    });
+
+    // Language buttons
     const langBtnEs = document.getElementById('lang-btn-es');
     const langBtnEn = document.getElementById('lang-btn-en');
-    if (langBtnEs) {
-        langBtnEs.onclick = () => {
-            if (currentLang === 'en') {
-                const newPath = window.location.pathname.replace(/^\/en/, '') || '/';
-                navigate(newPath);
-            }
-        };
-    }
-    if (langBtnEn) {
-        langBtnEn.onclick = () => {
-            if (currentLang === 'es') {
-                const newPath = window.location.pathname === '/' ? '/en' : `/en${window.location.pathname}`;
-                navigate(newPath);
-            }
-        };
-    }
+    const langBtnFr = document.getElementById('lang-btn-fr');
+    const langBtnPt = document.getElementById('lang-btn-pt');
+    const langBtnDe = document.getElementById('lang-btn-de');
+
+    const switchLang = (targetLang) => {
+        const prefix = targetLang === 'es' ? '' : `/${targetLang}`;
+        let currentPath = window.location.pathname;
+        // Strip current lang prefix
+        currentPath = currentPath.replace(/^\/(en|fr|pt|de)/, '') || '/';
+        navigate(`${prefix}${currentPath}`);
+    };
+
+    if (langBtnEs) langBtnEs.onclick = () => { if (currentLang !== 'es') switchLang('es'); };
+    if (langBtnEn) langBtnEn.onclick = () => { if (currentLang !== 'en') switchLang('en'); };
+    if (langBtnFr) langBtnFr.onclick = () => { if (currentLang !== 'fr') switchLang('fr'); };
+    if (langBtnPt) langBtnPt.onclick = () => { if (currentLang !== 'pt') switchLang('pt'); };
+    if (langBtnDe) langBtnDe.onclick = () => { if (currentLang !== 'de') switchLang('de'); };
 
     drawAlarmsList();
     updateActiveAlarmBadge();
 
-    // 6. Bind Mute Trigger and Sync UI
+    // 6. Mute
     const sidebarMuteBtn = document.getElementById('sidebar-mute-btn');
     if (sidebarMuteBtn) {
         sidebarMuteBtn.onclick = () => {
@@ -1125,31 +1214,28 @@ document.addEventListener('astro:page-load', () => {
     }
     updateMuteUI();
 
-    // Bind sidebar Settings toggle buttons
-    const sidebarSettingsBtn = document.getElementById('sidebar-settings-btn');
-    const closeSettingsBtn = document.getElementById('close-settings-btn');
-    if (sidebarSettingsBtn) sidebarSettingsBtn.onclick = toggleSettings;
-    if (closeSettingsBtn) closeSettingsBtn.onclick = toggleSettings;
-
-    // Bind hamburger btn click handler
+    // Settings / Hamburger buttons
+    document.getElementById('sidebar-settings-btn')?.addEventListener('click', toggleSettings);
+    document.getElementById('close-settings-btn')?.addEventListener('click', toggleSettings);
     const hamburgerBtn = document.getElementById('hamburger-btn');
-    if (hamburgerBtn) {
-        // Re-toggle listener (as the button template is persisted but we need handler bindings)
-        hamburgerBtn.onclick = toggleSidebar;
-    }
+    if (hamburgerBtn) hamburgerBtn.onclick = toggleSidebar;
 
-    // 7. Bind Alarm Triggered Overlay buttons
+    // 7. Alarm overlay buttons
     document.getElementById('btn-alarm-dismiss')?.addEventListener('click', dismissAlarm);
     document.getElementById('btn-alarm-snooze')?.addEventListener('click', snoozeAlarm);
 
-    // If an alarm is active and ringing, pop overlay back on new page!
-    if (triggeredAlarmData) {
-        triggerAlarm(triggeredAlarmData);
-    }
+    if (triggeredAlarmData) triggerAlarm(triggeredAlarmData);
 
-    // 8. Bind View-Specific Controls and Sync States
+    // 8. Ambient sound UI
+    setupAmbientUI();
+
+    // 9. Notifications UI
+    setupNotificationsUI();
+
+    // 10. View-specific setup
     if (state.activeView === 'clock') {
         updateClock();
+
     } else if (state.activeView === 'stopwatch') {
         const sw = state.stopwatch;
         const swStartBtn = document.getElementById('sw-start-btn');
@@ -1157,7 +1243,6 @@ document.addEventListener('astro:page-load', () => {
         const swResetBtn = document.getElementById('sw-reset-btn');
 
         if (swStartBtn && swLapBtn && swResetBtn) {
-            // Re-sync UI states
             if (sw.isRunning) {
                 swStartBtn.textContent = t.sw_btn_pause;
                 swStartBtn.style.background = '#ff3b30';
@@ -1172,13 +1257,11 @@ document.addEventListener('astro:page-load', () => {
                 swResetBtn.disabled = sw.elapsedTime === 0;
             }
 
-            // Click Handlers
             swStartBtn.onclick = () => {
                 if (!sw.isRunning) {
                     sw.isRunning = true;
                     sw.startTime = Date.now() - sw.elapsedTime;
                     sw.interval = setInterval(runStopwatchLoop, 30);
-                    
                     swStartBtn.textContent = t.sw_btn_pause;
                     swStartBtn.style.background = '#ff3b30';
                     swStartBtn.style.color = '#fff';
@@ -1188,7 +1271,6 @@ document.addEventListener('astro:page-load', () => {
                     sw.isRunning = false;
                     clearInterval(sw.interval);
                     sw.interval = null;
-
                     swStartBtn.textContent = t.sw_btn_start;
                     swStartBtn.style.background = 'var(--text-color)';
                     swStartBtn.style.color = '#000';
@@ -1201,13 +1283,7 @@ document.addEventListener('astro:page-load', () => {
                 if (!sw.isRunning) return;
                 const lapTime = sw.elapsedTime;
                 const lastLapTotal = sw.laps.length > 0 ? sw.laps[0].total : 0;
-                const lapDelta = lapTime - lastLapTotal;
-
-                sw.laps.unshift({
-                    num: sw.laps.length + 1,
-                    delta: lapDelta,
-                    total: lapTime
-                });
+                sw.laps.unshift({ num: sw.laps.length + 1, delta: lapTime - lastLapTotal, total: lapTime });
                 drawLapsList();
             };
 
@@ -1217,10 +1293,8 @@ document.addEventListener('astro:page-load', () => {
                 sw.interval = null;
                 sw.elapsedTime = 0;
                 sw.laps = [];
-
                 drawStopwatch();
                 drawLapsList();
-
                 swStartBtn.textContent = t.sw_btn_start;
                 swStartBtn.style.background = 'var(--text-color)';
                 swStartBtn.style.color = '#000';
@@ -1239,7 +1313,6 @@ document.addEventListener('astro:page-load', () => {
         const statusBadge = document.getElementById('pomodoro-status');
 
         if (pomStartBtn && pomResetBtn) {
-            // Re-sync UI states
             if (pom.isRunning) {
                 pomStartBtn.textContent = t.sw_btn_pause;
                 pomStartBtn.style.background = '#ff3b30';
@@ -1257,15 +1330,8 @@ document.addEventListener('astro:page-load', () => {
                 statusBadge.style.background = pom.isBreak ? "rgba(48, 209, 88, 0.08)" : "rgba(255, 149, 0, 0.08)";
             }
 
-            // Sync preset pills active styling
             document.querySelectorAll('#pom-presets .preset-pill').forEach(b => {
-                const f = parseInt(b.getAttribute('data-focus'));
-                const br = parseInt(b.getAttribute('data-break'));
-                if (f === pom.focusDuration && br === pom.breakDuration) {
-                    b.classList.add('active');
-                } else {
-                    b.classList.remove('active');
-                }
+                b.classList.toggle('active', parseInt(b.getAttribute('data-focus')) === pom.focusDuration && parseInt(b.getAttribute('data-break')) === pom.breakDuration);
             });
 
             pomStartBtn.onclick = () => {
@@ -1291,53 +1357,43 @@ document.addEventListener('astro:page-load', () => {
                 pom.interval = null;
                 pom.isBreak = false;
                 pom.timeLeft = pom.focusDuration * 60;
-
                 if (statusBadge) {
                     statusBadge.textContent = t.pom_badge_focus;
                     statusBadge.style.color = "var(--accent-color)";
                     statusBadge.style.borderColor = "var(--accent-color)";
                     statusBadge.style.background = "rgba(255, 149, 0, 0.08)";
                 }
-
                 pomStartBtn.textContent = t.sw_btn_start;
                 pomStartBtn.style.background = 'var(--text-color)';
                 pomStartBtn.style.color = '#000';
-                
                 drawPomodoro();
             };
         }
 
-        // Preset buttons
         document.querySelectorAll('#pom-presets .preset-pill').forEach(btn => {
             btn.onclick = () => {
                 document.querySelectorAll('#pom-presets .preset-pill').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-
                 const focus = parseInt(btn.getAttribute('data-focus') || "25");
                 const breakT = parseInt(btn.getAttribute('data-break') || "5");
-
                 pom.isRunning = false;
                 clearInterval(pom.interval);
                 pom.interval = null;
-
                 pom.focusDuration = focus;
                 pom.breakDuration = breakT;
                 pom.isBreak = false;
                 pom.timeLeft = focus * 60;
-
                 if (statusBadge) {
                     statusBadge.textContent = t.pom_badge_focus;
                     statusBadge.style.color = "var(--accent-color)";
                     statusBadge.style.borderColor = "var(--accent-color)";
                     statusBadge.style.background = "rgba(255, 149, 0, 0.08)";
                 }
-
                 if (pomStartBtn) {
                     pomStartBtn.textContent = t.sw_btn_start;
                     pomStartBtn.style.background = 'var(--text-color)';
                     pomStartBtn.style.color = '#000';
                 }
-
                 drawPomodoro();
             };
         });
@@ -1350,7 +1406,6 @@ document.addEventListener('astro:page-load', () => {
         const tmResetBtn = document.getElementById('timer-reset-btn');
 
         if (tmStartBtn && tmResetBtn) {
-            // Re-sync UI states
             if (tm.isRunning) {
                 tmStartBtn.textContent = t.sw_btn_pause;
                 tmStartBtn.style.background = '#ff3b30';
@@ -1361,14 +1416,8 @@ document.addEventListener('astro:page-load', () => {
                 tmStartBtn.style.color = '#000';
             }
 
-            // Sync presets styling
             document.querySelectorAll('#timer-presets .preset-pill').forEach(b => {
-                const s = parseInt(b.getAttribute('data-seconds'));
-                if (s === tm.duration) {
-                    b.classList.add('active');
-                } else {
-                    b.classList.remove('active');
-                }
+                b.classList.toggle('active', parseInt(b.getAttribute('data-seconds')) === tm.duration);
             });
 
             tmStartBtn.onclick = () => {
@@ -1393,93 +1442,89 @@ document.addEventListener('astro:page-load', () => {
                 clearInterval(tm.interval);
                 tm.interval = null;
                 tm.timeLeft = tm.duration;
-
                 tmStartBtn.textContent = t.sw_btn_start;
                 tmStartBtn.style.background = 'var(--text-color)';
                 tmStartBtn.style.color = '#000';
-                
                 drawTimer();
             };
         }
 
-        // Preset buttons
         document.querySelectorAll('#timer-presets .preset-pill').forEach(btn => {
             btn.onclick = () => {
                 document.querySelectorAll('#timer-presets .preset-pill').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-
                 const secs = parseInt(btn.getAttribute('data-seconds') || "1800");
-
                 tm.isRunning = false;
                 clearInterval(tm.interval);
                 tm.interval = null;
                 tm.duration = secs;
                 tm.timeLeft = secs;
-
                 if (tmStartBtn) {
                     tmStartBtn.textContent = t.sw_btn_start;
                     tmStartBtn.style.background = 'var(--text-color)';
                     tmStartBtn.style.color = '#000';
                 }
-
                 drawTimer();
             };
         });
 
         drawTimer();
+
     } else if (state.activeView === 'world-clock') {
-        const searchInput = document.getElementById('timezone-search');
-        const dropdown = document.getElementById('timezone-dropdown');
-        const refreshBtn = document.getElementById('timezone-refresh');
-        const titleEl = document.getElementById('timezone-title');
-
-        if (titleEl) {
-            titleEl.textContent = state.worldClock.selectedTimezone.replace(/_/g, ' ');
-        }
-
-        // Initialize timezone lists
-        if (state.worldClock.availableTimezones.length === 0) {
+        // Fetch available timezones list
+        if (availableTimezones.length === 0) {
             fetch('https://timeapi.io/api/TimeZone/AvailableTimeZones')
                 .then(r => r.json())
                 .then(list => {
-                    if (Array.isArray(list) && list.length > 0) {
-                        state.worldClock.availableTimezones = list;
-                    } else {
-                        state.worldClock.availableTimezones = majorTimezones;
-                    }
+                    if (Array.isArray(list) && list.length > 0) availableTimezones = list;
+                    else availableTimezones = majorTimezones;
                 })
-                .catch(() => {
-                    state.worldClock.availableTimezones = majorTimezones;
-                });
+                .catch(() => { availableTimezones = majorTimezones; });
         }
+
+        // Fetch time for any clocks that have no offsetMs yet (first load)
+        state.worldClocks.forEach((clockEntry, idx) => {
+            if (!clockEntry.offsetMs || clockEntry.offsetMs === 0) {
+                fetchTimezoneTime(clockEntry.timezone, clockEntry);
+            }
+        });
+
+        // Render current clocks
+        renderWorldClocks();
+        updateAddClockButton();
+
+        // Add timezone button
+        const addBtn = document.getElementById('wc-add-btn');
+        const searchInput = document.getElementById('timezone-search');
+        const dropdown = document.getElementById('timezone-dropdown');
 
         const renderDropdown = (filterText) => {
             if (!dropdown) return;
             dropdown.innerHTML = '';
-            
             const query = filterText.toLowerCase().trim();
-            if (!query) {
-                dropdown.style.display = 'none';
-                return;
-            }
-
-            const listToUse = state.worldClock.availableTimezones.length > 0 
-                ? state.worldClock.availableTimezones 
-                : majorTimezones;
-
+            if (!query) { dropdown.style.display = 'none'; return; }
+            const listToUse = availableTimezones.length > 0 ? availableTimezones : majorTimezones;
             const filtered = listToUse.filter(tz => tz.toLowerCase().includes(query)).slice(0, 10);
-            
             if (filtered.length === 0) {
-                dropdown.innerHTML = `<div class="timezone-item" style="pointer-events:none; opacity:0.5;">${t.wc_no_results}</div>`;
+                dropdown.innerHTML = `<div class="timezone-item" style="pointer-events:none;opacity:0.5;">${t.wc_no_results}</div>`;
             } else {
                 filtered.forEach(tz => {
                     const item = document.createElement('div');
                     item.className = 'timezone-item';
                     item.textContent = tz.replace(/_/g, ' ');
                     item.onclick = () => {
+                        if (state.worldClocks.length >= 6) {
+                            showShareToast(t.wc_max_reached);
+                            return;
+                        }
                         if (searchInput) searchInput.value = '';
                         dropdown.style.display = 'none';
-                        fetchTimezoneTime(tz);
+                        const newEntry = { timezone: tz, offsetMs: 0, label: tz.split('/').pop().replace(/_/g, ' ') };
+                        state.worldClocks.push(newEntry);
+                        saveState();
+                        renderWorldClocks();
+                        updateAddClockButton();
+                        fetchTimezoneTime(tz, newEntry);
                     };
                     dropdown.appendChild(item);
                 });
@@ -1489,11 +1534,7 @@ document.addEventListener('astro:page-load', () => {
 
         if (searchInput) {
             searchInput.placeholder = t.wc_search_placeholder;
-            searchInput.oninput = (e) => {
-                renderDropdown(e.target.value);
-            };
-            
-            // Close dropdown when clicking outside
+            searchInput.oninput = (e) => renderDropdown(e.target.value);
             document.addEventListener('click', (e) => {
                 if (dropdown && !dropdown.contains(e.target) && e.target !== searchInput) {
                     dropdown.style.display = 'none';
@@ -1501,17 +1542,14 @@ document.addEventListener('astro:page-load', () => {
             });
         }
 
-        if (refreshBtn) {
-            refreshBtn.onclick = () => {
-                fetchTimezoneTime(state.worldClock.selectedTimezone);
+        if (addBtn) {
+            addBtn.onclick = () => {
+                if (searchInput) searchInput.focus();
             };
         }
-
-        // Fetch initial time or refresh
-        fetchTimezoneTime(state.worldClock.selectedTimezone);
     }
 
-    // Fade out keyboard hints toast
+    // Fade out hint toast
     setTimeout(() => {
         const toast = document.getElementById('toast-tip');
         if (toast) toast.style.opacity = '0';

@@ -22,6 +22,9 @@ const t = languages[locale];
                 <div class="lang-selector">
                     <button class={`lang-btn ${locale === 'es' ? 'active' : ''}`} id="lang-btn-es">ES</button>
                     <button class={`lang-btn ${locale === 'en' ? 'active' : ''}`} id="lang-btn-en">EN</button>
+                    <button class={`lang-btn ${locale === 'fr' ? 'active' : ''}`} id="lang-btn-fr">FR</button>
+                    <button class={`lang-btn ${locale === 'pt' ? 'active' : ''}`} id="lang-btn-pt">PT</button>
+                    <button class={`lang-btn ${locale === 'de' ? 'active' : ''}`} id="lang-btn-de">DE</button>
                 </div>
             </div>
 
@@ -119,6 +122,26 @@ const t = languages[locale];
                     <input type="number" id="alarm-minute" min="0" max="59" placeholder="MM" class="time-input" />
                 </div>
                 <input type="text" id="alarm-label" placeholder={t.settings_alarm_label_placeholder} class="text-input" />
+
+                <!-- Recurrencia -->
+                <div class="setting-row" style="padding: 6px 0; border: none; background: transparent;">
+                    <span style="font-size: 0.82rem;">{t.settings_alarm_recurrence}</span>
+                    <select id="alarm-recurrence" class="select-input">
+                        <option value="once">{t.alarm_rec_once}</option>
+                        <option value="daily">{t.alarm_rec_daily}</option>
+                        <option value="weekdays">{t.alarm_rec_weekdays}</option>
+                        <option value="weekends">{t.alarm_rec_weekends}</option>
+                        <option value="custom">{t.alarm_rec_custom}</option>
+                    </select>
+                </div>
+
+                <!-- Días personalizados -->
+                <div id="alarm-custom-days-row" class="day-picker" style="display: none;">
+                    {(t.alarm_days_short || ['L','M','X','J','V','S','D']).map((day, i) => (
+                        <button class="day-toggle-btn" data-day={i}>{day}</button>
+                    ))}
+                </div>
+
                 <button id="add-alarm-btn" class="action-btn">{t.settings_alarm_add}</button>
             </div>
 
@@ -126,6 +149,34 @@ const t = languages[locale];
             <div class="alarms-list" id="sidebar-alarms-list">
                 <!-- Alarmas dinámicas -->
                 <p class="empty-list-text">{t.settings_alarm_none}</p>
+            </div>
+        </section>
+
+        <!-- SECCIÓN SONIDOS AMBIENTALES -->
+        <section class="settings-section">
+            <h3 class="section-title">{t.settings_ambient_title}</h3>
+            <div id="ambient-controls">
+                <div class="ambient-grid">
+                    <button class="ambient-btn" data-ambient="off">{t.ambient_off}</button>
+                    <button class="ambient-btn" data-ambient="rain">{t.ambient_rain}</button>
+                    <button class="ambient-btn" data-ambient="cafe">{t.ambient_cafe}</button>
+                    <button class="ambient-btn" data-ambient="forest">{t.ambient_forest}</button>
+                    <button class="ambient-btn" data-ambient="waves">{t.ambient_waves}</button>
+                    <button class="ambient-btn" data-ambient="keyboard">{t.ambient_keyboard}</button>
+                </div>
+                <div class="setting-row" style="padding: 10px 0 0; border: none; background: transparent;">
+                    <span style="font-size: 0.82rem;">{t.ambient_volume}</span>
+                    <input type="range" id="ambient-volume-slider" min="0" max="100" value="40" class="range-slider" />
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN NOTIFICACIONES -->
+        <section class="settings-section">
+            <h3 class="section-title">{t.settings_notifications}</h3>
+            <div class="setting-row" style="border: none; padding: 0; flex-direction: column; align-items: flex-start; gap: 8px;">
+                <button id="notifications-enable-btn" class="action-btn" style="width: 100%; font-size: 0.85rem;">{t.notifications_enable}</button>
+                <span id="notifications-status" style="font-size: 0.78rem; font-weight: 600;"></span>
             </div>
         </section>
 
@@ -533,6 +584,79 @@ const t = languages[locale];
         width: 100px;
         accent-color: var(--accent-color);
         cursor: pointer;
+    }
+
+    /* Select dropdown */
+    .select-input {
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #fff;
+        padding: 5px 8px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        outline: none;
+        max-width: 160px;
+    }
+
+    /* Day picker for custom recurrence */
+    .day-picker {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+    }
+
+    :global(.day-toggle-btn) {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.7);
+        font-size: 0.72rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    :global(.day-toggle-btn.selected) {
+        background: var(--accent-color);
+        color: #000;
+        border-color: var(--accent-color);
+    }
+
+    /* Ambient grid */
+    .ambient-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+
+    :global(.ambient-btn) {
+        padding: 8px 4px;
+        border-radius: 10px;
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.07);
+        color: rgba(255,255,255,0.75);
+        font-size: 0.72rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+    }
+
+    :global(.ambient-btn:hover) {
+        background: rgba(255,255,255,0.12);
+    }
+
+    :global(.ambient-btn.active) {
+        background: var(--accent-color);
+        color: #000;
+        border-color: var(--accent-color);
+        font-weight: 700;
     }
 
     @media (max-width: 600px) {

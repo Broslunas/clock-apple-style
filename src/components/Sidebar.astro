@@ -2,7 +2,7 @@
 import { languages } from '../utils/translations.js';
 const locale = Astro.currentLocale || 'es';
 const t = languages[locale];
-const prefix = locale === 'en' ? '/en' : '';
+const prefix = locale === 'en' ? '/en' : locale === 'fr' ? '/fr' : locale === 'pt' ? '/pt' : locale === 'de' ? '/de' : '';
 ---
 
 <!-- Botón de Hamburguesa Flotante Premium -->

@@ -1,0 +1,77 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import FlipCard from '../../components/FlipCard.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import SettingsPanel from '../../components/SettingsPanel.astro';
+import { languages } from '../../utils/translations.js';
+
+const locale = Astro.currentLocale || 'es';
+const t = languages[locale];
+---
+
+<Layout 
+	title={t.title_clock} 
+	description={t.desc_clock}
+	keywords={t.kw_clock}
+>
+	<main class="app-container" id="app-canvas">
+		<header class="app-header">
+			<h1 class="brand-title">{t.title_clock}</h1>
+			<div class="status-indicator">
+				<span id="active-alarms-badge" class="alarm-badge-status" style="display:none;">{t.active_alarms}</span>
+			</div>
+		</header>
+
+		<div class="parallax-wrapper" id="parallax-target" transition:animate="fade">
+			<section class="view-panel active" id="view-clock">
+				<div class="date-display" id="clock-date">{t.clock_loading}</div>
+				
+				<div class="flip-clock-row">
+					<div class="flip-group">
+						<FlipCard id="h1" transitionName="card-h1" />
+						<FlipCard id="h2" transitionName="card-h2" />
+					</div>
+					
+					<div class="colon">:</div>
+
+					<div class="flip-group">
+						<FlipCard id="m1" transitionName="card-m1" />
+						<FlipCard id="m2" transitionName="card-m2" />
+					</div>
+
+					<div class="colon s-colon" id="clock-s-colon" style="display:none;">:</div>
+
+					<div class="flip-group s-group" id="clock-s-group" style="display:none;">
+						<FlipCard id="s1" transitionName="card-s1" />
+						<FlipCard id="s2" transitionName="card-s2" />
+					</div>
+				</div>
+
+				<div class="ampm-badge" id="clock-ampm">AM</div>
+			</section>
+		</div>
+
+		<Sidebar />
+		<SettingsPanel />
+		<div class="toast-tip" id="toast-tip" set:html={t.toast_hint_html}></div>
+
+		<div class="alarm-triggered-overlay" id="alarm-triggered-overlay" style="display:none;">
+			<div class="alarm-triggered-box">
+				<div class="alarm-bell-icon">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+						<path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+					</svg>
+				</div>
+				<h2 id="triggered-alarm-label">{t.alarm_triggered_label_default}</h2>
+				<p id="triggered-alarm-time">00:00</p>
+				<div class="overlay-controls">
+					<button class="overlay-btn snooze" id="btn-alarm-snooze">{t.alarm_btn_snooze}</button>
+					<button class="overlay-btn dismiss" id="btn-alarm-dismiss">{t.alarm_btn_dismiss}</button>
+				</div>
+			</div>
+		</div>
+	</main>
+</Layout>
+
+<script src="../../utils/app.js"></script>

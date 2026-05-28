@@ -1,0 +1,96 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import FlipCard from '../../components/FlipCard.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import SettingsPanel from '../../components/SettingsPanel.astro';
+import { languages } from '../../utils/translations.js';
+
+const locale = Astro.currentLocale || 'es';
+const t = languages[locale];
+---
+
+<Layout 
+	title={t.title_stopwatch} 
+	description={t.desc_stopwatch}
+	keywords={t.kw_stopwatch}
+	ogImage="/og-stopwatch.png"
+>
+	<main class="app-container" id="app-canvas">
+		<header class="app-header">
+			<h1 class="brand-title">{t.title_clock}</h1>
+			<div class="status-indicator">
+				<span id="active-alarms-badge" class="alarm-badge-status" style="display:none;">{t.active_alarms}</span>
+			</div>
+		</header>
+
+		<div class="parallax-wrapper" id="parallax-target" transition:animate="fade">
+			<section class="view-panel active" id="view-stopwatch">
+				<h2 class="view-title">{t.sw_title}</h2>
+				
+				<div class="flip-clock-row">
+					<div class="flip-group">
+						<FlipCard id="sw-m1" label={t.sw_label_min} transitionName="card-m1" />
+						<FlipCard id="sw-m2" transitionName="card-m2" />
+					</div>
+					
+					<div class="colon">:</div>
+
+					<div class="flip-group">
+						<FlipCard id="sw-s1" label={t.sw_label_sec} transitionName="card-s1" />
+						<FlipCard id="sw-s2" transitionName="card-s2" />
+					</div>
+
+					<div class="colon">:</div>
+
+					<div class="flip-group ms-group">
+						<FlipCard id="sw-ms1" label={t.sw_label_cen} />
+						<FlipCard id="sw-ms2" />
+					</div>
+				</div>
+
+				<div class="controls-row">
+					<button id="sw-lap-btn" class="control-btn border-btn" disabled>{t.sw_btn_lap}</button>
+					<button id="sw-start-btn" class="control-btn play-btn">{t.sw_btn_start}</button>
+					<button id="sw-reset-btn" class="control-btn border-btn" disabled>{t.sw_btn_reset}</button>
+				</div>
+
+				<div class="laps-wrapper">
+					<table class="laps-table">
+						<thead>
+							<tr>
+								<th>{t.sw_table_num}</th>
+								<th>{t.sw_table_lap}</th>
+								<th>{t.sw_table_total}</th>
+							</tr>
+						</thead>
+						<tbody id="laps-list">
+						</tbody>
+					</table>
+				</div>
+			</section>
+		</div>
+
+		<Sidebar />
+		<SettingsPanel />
+		<div class="toast-tip" id="toast-tip" set:html={t.toast_hint_html}></div>
+
+		<div class="alarm-triggered-overlay" id="alarm-triggered-overlay" style="display:none;">
+			<div class="alarm-triggered-box">
+				<div class="alarm-bell-icon">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+						<path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+					</svg>
+				</div>
+				<h2 id="triggered-alarm-label">{t.alarm_triggered_label_default}</h2>
+				<p id="triggered-alarm-time">00:00</p>
+				<div class="overlay-controls">
+					<button class="overlay-btn snooze" id="btn-alarm-snooze">{t.alarm_btn_snooze}</button>
+					<button class="overlay-btn dismiss" id="btn-alarm-dismiss">{t.alarm_btn_dismiss}</button>
+				</div>
+			</div>
+		</div>
+	</main>
+</Layout>
+
+<script src="../../utils/app.js"></script>

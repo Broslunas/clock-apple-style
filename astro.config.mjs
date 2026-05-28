@@ -8,7 +8,7 @@ export default defineConfig({
 
   i18n: {
     defaultLocale: 'es',
-    locales: ['es', 'en'],
+    locales: ['es', 'en', 'fr', 'pt', 'de'],
     routing: {
       prefixDefaultLocale: false
     }
@@ -21,6 +21,9 @@ export default defineConfig({
         locales: {
           es: 'es-ES',
           en: 'en-US',
+          fr: 'fr-FR',
+          pt: 'pt-BR',
+          de: 'de-DE',
         },
       },
       changefreq: 'weekly',
