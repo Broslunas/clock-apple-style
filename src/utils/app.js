@@ -945,7 +945,7 @@ document.addEventListener('astro:page-load', () => {
 
     // 1. Determine active view based on url path
     const path = window.location.pathname;
-    if (path === '/' || path.endsWith('/index.html') || path === '/en' || path.endsWith('/en/index.html')) {
+    if (path === '/' || path === '/en' || path === '/en/' || path.endsWith('/index.html') || path.endsWith('/en/index.html')) {
         state.activeView = 'clock';
     } else if (path.includes('/world-clock')) {
         state.activeView = 'world-clock';
