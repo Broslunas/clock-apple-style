@@ -2,13 +2,14 @@
 interface Props {
 	id: string;
 	label?: string;
+	transitionName?: string;
 }
 
-const { id, label } = Astro.props;
+const { id, label, transitionName } = Astro.props;
 ---
 
 <div class="flip-card-wrapper">
-	<div class="flip-card" id={id}>
+	<div class="flip-card" id={id} style={transitionName ? `view-transition-name: ${transitionName};` : undefined}>
 		<!-- Reflector de vidrio para darle realismo 3D -->
 		<div class="glass-reflector"></div>
 		

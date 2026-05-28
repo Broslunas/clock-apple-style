@@ -29,22 +29,22 @@ import SettingsPanel from '../components/SettingsPanel.astro';
 				
 				<div class="flip-clock-row">
 					<div class="flip-group">
-						<FlipCard id="h1" />
-						<FlipCard id="h2" />
+						<FlipCard id="h1" transitionName="card-h1" />
+						<FlipCard id="h2" transitionName="card-h2" />
 					</div>
 					
 					<div class="colon">:</div>
 
 					<div class="flip-group">
-						<FlipCard id="m1" />
-						<FlipCard id="m2" />
+						<FlipCard id="m1" transitionName="card-m1" />
+						<FlipCard id="m2" transitionName="card-m2" />
 					</div>
 
 					<div class="colon s-colon" id="clock-s-colon" style="display:none;">:</div>
 
 					<div class="flip-group s-group" id="clock-s-group" style="display:none;">
-						<FlipCard id="s1" />
-						<FlipCard id="s2" />
+						<FlipCard id="s1" transitionName="card-s1" />
+						<FlipCard id="s2" transitionName="card-s2" />
 					</div>
 				</div>
 
