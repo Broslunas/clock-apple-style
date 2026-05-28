@@ -48,7 +48,7 @@ const { id, label, transitionName } = Astro.props;
 		perspective: 600px;
 		box-shadow: var(--flip-shadow, 0 20px 45px var(--shadow-color), inset 0 1px 0 rgba(255, 255, 255, 0.1));
 		border-radius: var(--card-radius);
-		transition: transform 0.1s ease-out;
+		transition: transform 0.1s ease-out, width 0.6s cubic-bezier(0.25, 1, 0.5, 1), height 0.6s cubic-bezier(0.25, 1, 0.5, 1), border-radius 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 	}
 
 	/* Reflector de vidrio */
@@ -87,6 +87,7 @@ const { id, label, transitionName } = Astro.props;
 		color: var(--flip-text);
 		font-family: var(--font-mono);
 		text-shadow: var(--text-glow, 0 2px 4px rgba(0, 0, 0, 0.2));
+		transition: font-size 0.6s cubic-bezier(0.25, 1, 0.5, 1), line-height 0.6s cubic-bezier(0.25, 1, 0.5, 1), height 0.6s cubic-bezier(0.25, 1, 0.5, 1), top 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 	}
 
 	/* Mitad superior */

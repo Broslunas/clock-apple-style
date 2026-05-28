@@ -971,22 +971,35 @@ function drawTimer() {
     const colonH = document.getElementById('tm-colon-h');
     const minutesGroup = document.getElementById('tm-minutes-group');
     const colonM = document.getElementById('tm-colon-m');
+    const container = document.querySelector('#view-timer .progress-ring-container');
 
     if (hours > 0) {
-        if (hoursGroup) hoursGroup.style.display = 'flex';
-        if (colonH) colonH.style.display = 'block';
-        if (minutesGroup) minutesGroup.style.display = 'flex';
-        if (colonM) colonM.style.display = 'block';
+        if (hoursGroup) hoursGroup.classList.remove('collapsed');
+        if (colonH) colonH.classList.remove('collapsed');
+        if (minutesGroup) minutesGroup.classList.remove('collapsed');
+        if (colonM) colonM.classList.remove('collapsed');
+        if (container) {
+            container.classList.remove('hide-hours');
+            container.classList.remove('hide-hours-minutes');
+        }
     } else {
-        if (hoursGroup) hoursGroup.style.display = 'none';
-        if (colonH) colonH.style.display = 'none';
+        if (hoursGroup) hoursGroup.classList.add('collapsed');
+        if (colonH) colonH.classList.add('collapsed');
 
         if (minutes > 0) {
-            if (minutesGroup) minutesGroup.style.display = 'flex';
-            if (colonM) colonM.style.display = 'block';
+            if (minutesGroup) minutesGroup.classList.remove('collapsed');
+            if (colonM) colonM.classList.remove('collapsed');
+            if (container) {
+                container.classList.add('hide-hours');
+                container.classList.remove('hide-hours-minutes');
+            }
         } else {
-            if (minutesGroup) minutesGroup.style.display = 'none';
-            if (colonM) colonM.style.display = 'none';
+            if (minutesGroup) minutesGroup.classList.add('collapsed');
+            if (colonM) colonM.classList.add('collapsed');
+            if (container) {
+                container.classList.remove('hide-hours');
+                container.classList.add('hide-hours-minutes');
+            }
         }
     }
 

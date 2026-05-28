@@ -336,6 +336,20 @@ const jsonLd = JSON.stringify({
 	.flip-group {
 		display: flex;
 		gap: 6px;
+		max-width: 400px;
+		opacity: 1;
+		transform: scale(1);
+		overflow: hidden;
+		transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), max-width 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), margin 0.6s cubic-bezier(0.25, 1, 0.5, 1), gap 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+	}
+
+	.flip-group.collapsed {
+		opacity: 0 !important;
+		max-width: 0 !important;
+		transform: scale(0.6) !important;
+		margin: 0 !important;
+		gap: 0 !important;
+		pointer-events: none;
 	}
 
 	/* Separadores : */
@@ -346,7 +360,18 @@ const jsonLd = JSON.stringify({
 		animation: colonBlink 1.5s infinite;
 		align-self: center;
 		margin: 0 -4px;
-		transform: translateY(-8px);
+		transform: translateY(-8px) scale(1);
+		max-width: 50px;
+		overflow: hidden;
+		transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1), max-width 0.6s cubic-bezier(0.25, 1, 0.5, 1), transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), margin 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+	}
+
+	.colon.collapsed {
+		opacity: 0 !important;
+		max-width: 0 !important;
+		transform: translateY(-8px) scale(0.6) !important;
+		margin: 0 !important;
+		pointer-events: none;
 	}
 
 	@keyframes colonBlink {
@@ -517,6 +542,21 @@ const jsonLd = JSON.stringify({
 		--card-height: 52px;
 		--card-font-size: 2.3rem;
 		--card-radius: 5px;
+		transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+	}
+
+	#view-timer .progress-ring-container.hide-hours {
+		--card-width: 56px;
+		--card-height: 76px;
+		--card-font-size: 3.5rem;
+		--card-radius: 8px;
+	}
+
+	#view-timer .progress-ring-container.hide-hours-minutes {
+		--card-width: 90px;
+		--card-height: 120px;
+		--card-font-size: 5.5rem;
+		--card-radius: 12px;
 	}
 
 	.clock-inside-ring {
