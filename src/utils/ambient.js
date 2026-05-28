@@ -1,10 +1,11 @@
-// Broslunas Clock — Ambient Sound Engine (Web Audio API, no external files needed)
+// Broslunas Clock — Ambient Sound Engine (Web Audio API + external stream support)
 
 let audioCtx = null;
 let ambientNodes = [];
 let ambientGainNode = null;
 let currentAmbient = 'off';
 let ambientVolume = 0.4;
+let lofiAudio = null;
 
 function getAudioCtx() {
     if (!audioCtx) {
@@ -24,6 +25,11 @@ function stopAmbient() {
     if (ambientGainNode) {
         ambientGainNode.disconnect();
         ambientGainNode = null;
+    }
+    if (lofiAudio) {
+        lofiAudio.pause();
+        lofiAudio.src = '';
+        lofiAudio = null;
     }
 }
 
@@ -258,6 +264,16 @@ function startKeyboard(ctx, masterGain) {
     scheduleClick();
 }
 
+// ─── Lofi Stream ─────────────────────────────────────────────
+const LOFI_URL = 'https://stream.zeno.fm/0r0xa792kwzuv';
+
+function startLofi(vol) {
+    lofiAudio = new Audio(LOFI_URL);
+    lofiAudio.loop = false;
+    lofiAudio.volume = vol;
+    lofiAudio.play().catch(() => {});
+}
+
 // ─── Public API ──────────────────────────────────────────────
 export function setAmbient(type, vol = ambientVolume) {
     ambientVolume = vol;
@@ -277,6 +293,7 @@ export function setAmbient(type, vol = ambientVolume) {
         case 'forest':    startForest(ctx, ambientGainNode);   break;
         case 'waves':     startWaves(ctx, ambientGainNode);    break;
         case 'keyboard':  startKeyboard(ctx, ambientGainNode); break;
+        case 'lofi':      startLofi(vol);                      break;
     }
 }
 
@@ -284,6 +301,9 @@ export function setAmbientVolume(vol) {
     ambientVolume = vol;
     if (ambientGainNode) {
         ambientGainNode.gain.setTargetAtTime(vol, audioCtx.currentTime, 0.1);
+    }
+    if (lofiAudio) {
+        lofiAudio.volume = vol;
     }
 }
 
