@@ -1,4 +1,4 @@
-// Web Audio API Sound Synthesizer for Apple Flip Clock Pro
+// Web Audio API Sound Synthesizer for Broslunas Clock
 let audioCtx = null;
 let isMuted = false;
 let alarmInterval = null;

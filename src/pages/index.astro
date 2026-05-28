@@ -6,13 +6,13 @@ import SettingsPanel from '../components/SettingsPanel.astro';
 ---
 
 <Layout 
-	title="Apple Flip Clock Pro" 
-	description="Suite multifuncional premium de tiempo al estilo Apple: Reloj, Cronómetro con vueltas, Temporizador Pomodoro y Alarmas con sonido mecánico sintetizado."
+	title="Broslunas Clock" 
+	description="Suite multifuncional premium de tiempo: Reloj, Cronómetro con vueltas, Temporizador Pomodoro y Alarmas con sonido mecánico sintetizado."
 >
 	<!-- CONTENEDOR PRINCIPAL -->
 	<main class="app-container" id="app-canvas">
 		<header class="app-header">
-			<h1 class="brand-title">Flip Clock</h1>
+			<h1 class="brand-title">Broslunas Clock</h1>
 			<!-- Indicador rápido de sonido / alarma activa -->
 			<div class="status-indicator">
 				<span id="active-alarms-badge" class="alarm-badge-status" style="display:none;">⏰ Alarmas Activas</span>
@@ -243,6 +243,7 @@ import SettingsPanel from '../components/SettingsPanel.astro';
 		justify-content: space-between;
 		align-items: center;
 		z-index: 100;
+		padding-left: 60px; /* Evita que el botón de hamburguesa tape el título */
 	}
 
 	.brand-title {

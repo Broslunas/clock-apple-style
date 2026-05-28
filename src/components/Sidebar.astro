@@ -3,9 +3,11 @@
 
 <!-- Botón de Hamburguesa Flotante Premium -->
 <button class="hamburger-trigger" id="hamburger-btn" aria-label="Abrir menú" aria-expanded="false">
-    <div class="hamburger-box">
-        <div class="hamburger-inner"></div>
-    </div>
+    <svg class="hamburger-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <line class="line-top" x1="4" y1="6" x2="20" y2="6"></line>
+        <line class="line-mid" x1="4" y1="12" x2="20" y2="12"></line>
+        <line class="line-bot" x1="4" y1="18" x2="20" y2="18"></line>
+    </svg>
 </button>
 
 <!-- Menú Lateral Colapsable (Sidebar Drawer) -->
@@ -15,7 +17,7 @@
             <circle cx="12" cy="12" r="10"></circle>
             <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
-        <span class="brand-text">Flip Clock <span class="badge">Pro</span></span>
+        <span class="brand-text">Broslunas Clock <span class="badge">Pro</span></span>
     </div>
 
     <div class="sidebar-menu">
@@ -116,56 +118,38 @@
         transform: scale(1.05);
     }
 
-    /* Animación del icono de hamburguesa a cruz */
-    .hamburger-box {
-        width: 22px;
-        height: 14px;
-        position: relative;
+    /* Animación del icono de hamburguesa SVG a cruz */
+    .hamburger-svg {
+        width: 20px;
+        height: 20px;
+        color: #fff;
+        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
-    .hamburger-inner,
-    .hamburger-inner::before,
-    .hamburger-inner::after {
-        width: 22px;
-        height: 2px;
-        background-color: #fff;
-        position: absolute;
-        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
-                    background-color 0.3s ease;
-        border-radius: 4px;
+    .hamburger-svg line {
+        transform-origin: 12px 12px;
+        transform-box: viewBox;
+        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), 
+                    stroke 0.4s cubic-bezier(0.25, 1, 0.5, 1), 
+                    opacity 0.3s;
     }
 
-    .hamburger-inner {
-        top: 50%;
-        transform: translateY(-50%);
+    .hamburger-trigger[aria-expanded="true"] .hamburger-svg {
+        transform: rotate(180deg);
     }
 
-    .hamburger-inner::before {
-        content: "";
-        top: -6px;
+    .hamburger-trigger[aria-expanded="true"] .line-top {
+        transform: translateY(6px) rotate(45deg);
+        stroke: var(--accent-color);
     }
 
-    .hamburger-inner::after {
-        content: "";
-        bottom: -6px;
+    .hamburger-trigger[aria-expanded="true"] .line-mid {
+        opacity: 0;
     }
 
-    /* Estados abiertos */
-    .hamburger-trigger[aria-expanded="true"] .hamburger-inner {
-        transform: rotate(45deg);
-        background-color: var(--accent-color);
-    }
-
-    .hamburger-trigger[aria-expanded="true"] .hamburger-inner::before {
-        transform: rotate(90deg) translate(6px, 0);
-        top: 0;
-        background-color: var(--accent-color);
-    }
-
-    .hamburger-trigger[aria-expanded="true"] .hamburger-inner::after {
-        transform: rotate(90deg) translate(-6px, 0);
-        bottom: 0;
-        opacity: 0; /* Oculta la línea de abajo */
+    .hamburger-trigger[aria-expanded="true"] .line-bot {
+        transform: translateY(-6px) rotate(-45deg);
+        stroke: var(--accent-color);
     }
 
     /* CONTENEDOR DE SIDEBAR LATERAL (DRAWER) */
