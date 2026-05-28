@@ -1,0 +1,1958 @@
+---
+import Layout from '../layouts/Layout.astro';
+import FlipCard from '../components/FlipCard.astro';
+import Sidebar from '../components/Sidebar.astro';
+import SettingsPanel from '../components/SettingsPanel.astro';
+---
+
+<Layout 
+	title="Apple Flip Clock Pro" 
+	description="Suite multifuncional premium de tiempo al estilo Apple: Reloj, Cronómetro con vueltas, Temporizador Pomodoro y Alarmas con sonido mecánico sintetizado."
+>
+	<!-- CONTENEDOR PRINCIPAL -->
+	<main class="app-container" id="app-canvas">
+		<header class="app-header">
+			<h1 class="brand-title">Flip Clock</h1>
+			<!-- Indicador rápido de sonido / alarma activa -->
+			<div class="status-indicator">
+				<span id="active-alarms-badge" class="alarm-badge-status" style="display:none;">⏰ Alarmas Activas</span>
+			</div>
+		</header>
+
+		<!-- CONTENEDOR DE PERSPECTIVA 3D -->
+		<div class="parallax-wrapper" id="parallax-target">
+			
+			<!-- ==============================================
+			     VISTA 1: RELOJ CLÁSICO 
+			     ============================================== -->
+			<section class="view-panel active" id="view-clock">
+				<div class="date-display" id="clock-date">Cargando fecha...</div>
+				
+				<div class="flip-clock-row">
+					<div class="flip-group">
+						<FlipCard id="h1" />
+						<FlipCard id="h2" />
+					</div>
+					
+					<div class="colon">:</div>
+
+					<div class="flip-group">
+						<FlipCard id="m1" />
+						<FlipCard id="m2" />
+					</div>
+
+					<div class="colon s-colon" id="clock-s-colon" style="display:none;">:</div>
+
+					<div class="flip-group s-group" id="clock-s-group" style="display:none;">
+						<FlipCard id="s1" />
+						<FlipCard id="s2" />
+					</div>
+				</div>
+
+				<div class="ampm-badge" id="clock-ampm">AM</div>
+			</section>
+
+			<!-- ==============================================
+			     VISTA 2: CRONÓMETRO 
+			     ============================================== -->
+			<section class="view-panel" id="view-stopwatch" style="display:none;">
+				<h2 class="view-title">Cronómetro</h2>
+				
+				<div class="flip-clock-row">
+					<div class="flip-group">
+						<FlipCard id="sw-m1" label="Min" />
+						<FlipCard id="sw-m2" />
+					</div>
+					
+					<div class="colon">:</div>
+
+					<div class="flip-group">
+						<FlipCard id="sw-s1" label="Seg" />
+						<FlipCard id="sw-s2" />
+					</div>
+
+					<div class="colon">:</div>
+
+					<div class="flip-group ms-group">
+						<FlipCard id="sw-ms1" label="Cen" />
+						<FlipCard id="sw-ms2" />
+					</div>
+				</div>
+
+				<div class="controls-row">
+					<button id="sw-lap-btn" class="control-btn border-btn" disabled>Vuelta</button>
+					<button id="sw-start-btn" class="control-btn play-btn">Iniciar</button>
+					<button id="sw-reset-btn" class="control-btn border-btn">Reiniciar</button>
+				</div>
+
+				<!-- Tabla de vueltas -->
+				<div class="laps-wrapper">
+					<table class="laps-table">
+						<thead>
+							<tr>
+								<th>Nº</th>
+								<th>Tiempo</th>
+								<th>Total</th>
+							</tr>
+						</thead>
+						<tbody id="laps-list">
+							<!-- Inyecciones dinámicas -->
+						</tbody>
+					</table>
+				</div>
+			</section>
+
+			<!-- ==============================================
+			     VISTA 3: POMODORO 
+			     ============================================== -->
+			<section class="view-panel" id="view-pomodoro" style="display:none;">
+				<h2 class="view-title">Pomodoro</h2>
+
+				<div class="progress-ring-container">
+					<svg class="progress-ring-svg" width="300" height="300">
+						<circle class="progress-ring-bg" cx="150" cy="150" r="135" />
+						<circle class="progress-ring-bar" id="pom-progress-bar" cx="150" cy="150" r="135" />
+					</svg>
+
+					<div class="clock-inside-ring">
+						<div class="flip-clock-row compact">
+							<div class="flip-group">
+								<FlipCard id="pom-m1" />
+								<FlipCard id="pom-m2" />
+							</div>
+							<div class="colon">:</div>
+							<div class="flip-group">
+								<FlipCard id="pom-s1" />
+								<FlipCard id="pom-s2" />
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="pomodoro-badge" id="pomodoro-status">TRABAJO</div>
+
+				<div class="controls-row">
+					<button id="pom-start-btn" class="control-btn play-btn">Iniciar</button>
+					<button id="pom-reset-btn" class="control-btn border-btn">Reiniciar</button>
+				</div>
+
+				<div class="presets-row" id="pom-presets">
+					<button class="preset-pill active" data-focus="25" data-break="5">25 / 5 Min</button>
+					<button class="preset-pill" data-focus="50" data-break="10">50 / 10 Min</button>
+					<button class="preset-pill" data-focus="15" data-break="3">15 / 3 Min</button>
+				</div>
+			</section>
+
+			<!-- ==============================================
+			     VISTA 4: TEMPORIZADOR 
+			     ============================================== -->
+			<section class="view-panel" id="view-timer" style="display:none;">
+				<h2 class="view-title">Temporizador</h2>
+
+				<div class="progress-ring-container">
+					<svg class="progress-ring-svg" width="300" height="300">
+						<circle class="progress-ring-bg" cx="150" cy="150" r="135" />
+						<circle class="progress-ring-bar" id="timer-progress-bar" cx="150" cy="150" r="135" />
+					</svg>
+
+					<div class="clock-inside-ring">
+						<div class="flip-clock-row compact">
+							<div class="flip-group">
+								<FlipCard id="tm-h1" />
+								<FlipCard id="tm-h2" />
+							</div>
+							<div class="colon">:</div>
+							<div class="flip-group">
+								<FlipCard id="tm-m1" />
+								<FlipCard id="tm-m2" />
+							</div>
+							<div class="colon">:</div>
+							<div class="flip-group">
+								<FlipCard id="tm-s1" />
+								<FlipCard id="tm-s2" />
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="controls-row">
+					<button id="timer-start-btn" class="control-btn play-btn">Iniciar</button>
+					<button id="timer-reset-btn" class="control-btn border-btn">Reiniciar</button>
+				</div>
+
+				<div class="presets-row" id="timer-presets">
+					<button class="preset-pill" data-seconds="60">1m</button>
+					<button class="preset-pill" data-seconds="300">5m</button>
+					<button class="preset-pill" data-seconds="600">10m</button>
+					<button class="preset-pill active" data-seconds="1800">30m</button>
+					<button class="preset-pill" data-seconds="3600">1h</button>
+				</div>
+			</section>
+
+		</div>
+
+		<!-- MENU LATERAL DE NAVEGACIÓN -->
+		<Sidebar />
+
+		<!-- PANEL DE AJUSTES -->
+		<SettingsPanel />
+
+		<!-- TOAST NOTIFICACIÓN -->
+		<div class="toast-tip" id="toast-tip">Presiona [ . ] para ajustes | F11 Pantalla Completa</div>
+	</main>
+
+	<!-- ==============================================
+	     OVERLAY ALARMA DETECTADA
+	     ============================================== -->
+	<div class="alarm-triggered-overlay" id="alarm-triggered-overlay" style="display:none;">
+		<div class="alarm-triggered-box">
+			<div class="alarm-bell-icon">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+					<path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+				</svg>
+			</div>
+			<h2 id="triggered-alarm-label">¡Tiempo Cumplido!</h2>
+			<p id="triggered-alarm-time">00:00</p>
+			
+			<div class="overlay-controls">
+				<button class="overlay-btn snooze" id="btn-alarm-snooze">Posponer (5 min)</button>
+				<button class="overlay-btn dismiss" id="btn-alarm-dismiss">Descartar</button>
+			</div>
+		</div>
+	</div>
+</Layout>
+
+<style>
+	/* --- MAQUETADO DE PÁGINA --- */
+	.app-container {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		align-items: center;
+		min-height: 100vh;
+		padding: 24px 20px 32px 20px; /* Margen inferior ajustado */
+		position: relative;
+		overflow: hidden;
+	}
+
+	.app-header {
+		width: 100%;
+		max-width: 1200px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		z-index: 100;
+	}
+
+	.brand-title {
+		font-weight: 800;
+		font-size: 1.4rem;
+		letter-spacing: -1px;
+		background: linear-gradient(180deg, #fff 0%, rgba(255, 255, 255, 0.6) 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
+
+	.alarm-badge-status {
+		background: rgba(255, 149, 0, 0.15);
+		color: var(--accent-color);
+		padding: 4px 12px;
+		border-radius: 12px;
+		font-size: 0.75rem;
+		font-weight: 700;
+		border: 1px solid rgba(255, 149, 0, 0.2);
+		animation: pulseGlow 2s infinite;
+	}
+
+	@keyframes pulseGlow {
+		0%, 100% { opacity: 0.7; transform: scale(1); }
+		50% { opacity: 1; transform: scale(1.03); }
+	}
+
+	/* CONTENEDOR 3D PARALLAX */
+	.parallax-wrapper {
+		flex-grow: 1;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+		max-width: 1000px;
+		transform-style: preserve-3d;
+		transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+		transition: transform 0.15s ease-out;
+		z-index: 200;
+	}
+
+	/* VISTA PANEL GENERAL */
+	.view-panel {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+		text-align: center;
+		animation: fadeIn 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; transform: translateY(15px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.view-title {
+		font-size: 1.3rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 4px;
+		opacity: 0.5;
+		margin-bottom: 1.2rem;
+	}
+
+	/* Renglón del Reloj Flip */
+	.flip-clock-row {
+		display: flex;
+		gap: 24px;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.flip-group {
+		display: flex;
+		gap: 6px;
+	}
+
+	/* Separadores : */
+	.colon {
+		font-size: 5rem;
+		font-weight: 200;
+		opacity: 0.4;
+		animation: colonBlink 1.5s infinite;
+		align-self: center;
+		margin: 0 -4px;
+		transform: translateY(-8px);
+	}
+
+	@keyframes colonBlink {
+		0%, 100% { opacity: 0.15; }
+		50% { opacity: 0.75; }
+	}
+
+	/* ELEMENTOS VISTA RELOJ */
+	.date-display {
+		font-size: 1.1rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 4px;
+		opacity: 0.8;
+		margin-bottom: 2.5rem;
+		text-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+	}
+
+	.ampm-badge {
+		font-size: 1.1rem;
+		font-weight: 700;
+		letter-spacing: 3px;
+		opacity: 0.8;
+		margin-top: 2.5rem;
+		text-transform: uppercase;
+		background: rgba(255,255,255,0.06);
+		padding: 4px 14px;
+		border-radius: 10px;
+		border: 1px solid rgba(255,255,255,0.04);
+	}
+
+	/* CONTROLES GENERALES (BOTONES) */
+	.controls-row {
+		display: flex;
+		gap: 16px;
+		margin-top: 1.2rem;
+		z-index: 50;
+	}
+
+	.control-btn {
+		height: 48px;
+		padding: 0 28px;
+		border-radius: 24px;
+		font-size: 0.95rem;
+		font-weight: 700;
+		cursor: pointer;
+		transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.play-btn {
+		background: var(--text-color);
+		color: #000;
+		border: none;
+		box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+	}
+
+	.play-btn:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 15px 25px rgba(0, 0, 0, 0.35);
+		background: var(--accent-color);
+	}
+
+	.border-btn {
+		background: rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		color: #fff;
+		backdrop-filter: blur(10px);
+	}
+
+	.border-btn:hover {
+		background: rgba(255, 255, 255, 0.15);
+		border-color: rgba(255, 255, 255, 0.2);
+		transform: translateY(-1px);
+	}
+
+	.border-btn:disabled {
+		opacity: 0.3;
+		pointer-events: none;
+	}
+
+	/* TABLA DE VUELTAS (CRONÓMETRO) */
+	.laps-wrapper {
+		margin-top: 2rem;
+		max-height: 180px;
+		overflow-y: auto;
+		width: 100%;
+		max-width: 420px;
+		background: rgba(255, 255, 255, 0.02);
+		border: 1px solid rgba(255, 255, 255, 0.04);
+		border-radius: 16px;
+		padding: 4px;
+	}
+
+	.laps-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.85rem;
+		text-align: left;
+	}
+
+	.laps-table th {
+		padding: 10px 16px;
+		font-weight: 700;
+		color: rgba(255, 255, 255, 0.4);
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		font-size: 0.7rem;
+	}
+
+	.laps-table td {
+		padding: 8px 16px;
+		font-family: var(--font-mono);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+	}
+
+	.laps-table tr:last-child td {
+		border-bottom: none;
+	}
+
+	/* ANILLO DE PROGRESO DE POMODORO Y TIMER */
+	.progress-ring-container {
+		position: relative;
+		width: 300px;
+		height: 300px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.progress-ring-svg {
+		position: absolute;
+		top: 0;
+		left: 0;
+		transform: rotate(-90deg); /* Empezar por arriba */
+	}
+
+	.progress-ring-bg {
+		fill: none;
+		stroke: rgba(255, 255, 255, 0.03);
+		stroke-width: 8px;
+	}
+
+	.progress-ring-bar {
+		fill: none;
+		stroke: var(--accent-color);
+		stroke-width: 8px;
+		stroke-linecap: round;
+		/* 2 * pi * 135 = 848.23 */
+		stroke-dasharray: 848;
+		stroke-dashoffset: 848;
+		transition: stroke-dashoffset 0.3s linear, stroke 0.5s ease;
+		filter: drop-shadow(0 0 6px var(--accent-color));
+	}
+
+	/* Ajuste de escala para tarjetas dentro de los anillos */
+	#view-pomodoro .progress-ring-container {
+		--card-width: 56px;
+		--card-height: 76px;
+		--card-font-size: 3.5rem;
+		--card-radius: 8px;
+	}
+
+	#view-timer .progress-ring-container {
+		--card-width: 38px;
+		--card-height: 52px;
+		--card-font-size: 2.3rem;
+		--card-radius: 5px;
+	}
+
+	.clock-inside-ring {
+		z-index: 10;
+	}
+
+	.flip-clock-row.compact {
+		gap: 12px;
+	}
+
+	.compact .colon {
+		font-size: 3.5rem;
+		transform: translateY(-4px);
+	}
+
+	/* PRESETS (POMODORO & TIMER) */
+	.presets-row {
+		display: flex;
+		gap: 10px;
+		margin-top: 1rem;
+		z-index: 50;
+	}
+
+	.preset-pill {
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		color: rgba(255, 255, 255, 0.7);
+		height: 36px;
+		padding: 0 16px;
+		border-radius: 18px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.preset-pill:hover {
+		background: rgba(255, 255, 255, 0.12);
+		color: #fff;
+	}
+
+	.preset-pill.active {
+		background: var(--accent-color);
+		color: #000;
+		border-color: transparent;
+		font-weight: 700;
+	}
+
+	.pomodoro-badge {
+		font-size: 0.8rem;
+		font-weight: 800;
+		letter-spacing: 3px;
+		color: var(--accent-color);
+		border: 1.5px solid var(--accent-color);
+		padding: 5px 16px;
+		border-radius: 20px;
+		margin-top: 1rem;
+		background: rgba(255, 149, 0, 0.08);
+		animation: badgeGlow 3s infinite;
+	}
+
+	@keyframes badgeGlow {
+		0%, 100% { filter: drop-shadow(0 0 1px var(--accent-color)); }
+		50% { filter: drop-shadow(0 0 6px var(--accent-color)); }
+	}
+
+	/* TOAST HINT */
+	.toast-tip {
+		position: fixed;
+		bottom: 24px;
+		background: rgba(0, 0, 0, 0.6);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		padding: 8px 16px;
+		border-radius: 20px;
+		font-size: 0.8rem;
+		font-weight: 500;
+		opacity: 0.65;
+		transition: opacity 0.5s;
+		pointer-events: none;
+		z-index: 100;
+	}
+
+	/* OVERLAY DE ALARMA DISPARADA */
+	.alarm-triggered-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(10, 10, 12, 0.92);
+		backdrop-filter: blur(40px);
+		-webkit-backdrop-filter: blur(40px);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 9999;
+		animation: overlayFadeIn 0.3s forwards;
+	}
+
+	@keyframes overlayFadeIn {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
+	.alarm-triggered-box {
+		text-align: center;
+		padding: 40px;
+		border-radius: 30px;
+		background: rgba(255, 255, 255, 0.04);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+		max-width: 440px;
+		width: 90%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 20px;
+	}
+
+	.alarm-bell-icon {
+		width: 80px;
+		height: 80px;
+		background: rgba(255, 149, 0, 0.15);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--accent-color);
+		animation: ringWobble 0.5s infinite;
+	}
+
+	.alarm-bell-icon svg {
+		width: 40px;
+		height: 40px;
+	}
+
+	@keyframes ringWobble {
+		0%, 100% { transform: rotate(0); }
+		25% { transform: rotate(-15deg); }
+		75% { transform: rotate(15deg); }
+	}
+
+	.alarm-triggered-box h2 {
+		font-size: 1.6rem;
+		font-weight: 800;
+	}
+
+	.alarm-triggered-box p {
+		font-size: 3.5rem;
+		font-weight: 800;
+		font-family: var(--font-mono);
+		color: var(--accent-color);
+	}
+
+	.overlay-controls {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		width: 100%;
+		margin-top: 10px;
+	}
+
+	.overlay-btn {
+		height: 50px;
+		border-radius: 12px;
+		font-weight: 700;
+		font-size: 0.95rem;
+		cursor: pointer;
+		transition: all 0.2s;
+		width: 100%;
+		border: none;
+	}
+
+	.overlay-btn.snooze {
+		background: rgba(255, 255, 255, 0.1);
+		color: #fff;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+	}
+
+	.overlay-btn.snooze:hover {
+		background: rgba(255, 255, 255, 0.18);
+	}
+
+	.overlay-btn.dismiss {
+		background: #ff453a; /* iOS Red */
+		color: #fff;
+	}
+
+	.overlay-btn.dismiss:hover {
+		background: #ff5b52;
+		transform: scale(1.02);
+	}
+
+	/* RESPONSIVIDAD GENERAL */
+	@media (max-width: 900px) {
+		.flip-clock-row {
+			gap: 12px;
+		}
+		.colon {
+			font-size: 3.8rem;
+			transform: translateY(-4px);
+		}
+		.progress-ring-container {
+			width: 250px;
+			height: 250px;
+		}
+		.progress-ring-svg {
+			width: 250px;
+			height: 250px;
+		}
+		.progress-ring-bg, .progress-ring-bar {
+			cx: 125px;
+			cy: 125px;
+			r: 110px;
+			stroke-width: 6px;
+		}
+		.progress-ring-bar {
+			/* 2 * pi * 110 = 691.15 */
+			stroke-dasharray: 691;
+			stroke-dashoffset: 691;
+		}
+		.laps-wrapper {
+			max-width: 320px;
+		}
+		
+		#view-pomodoro .progress-ring-container {
+			--card-width: 44px;
+			--card-height: 60px;
+			--card-font-size: 2.8rem;
+			--card-radius: 6px;
+		}
+
+		#view-timer .progress-ring-container {
+			--card-width: 30px;
+			--card-height: 40px;
+			--card-font-size: 1.8rem;
+			--card-radius: 4px;
+		}
+	}
+
+	@media (max-width: 600px) {
+		.app-container {
+			padding-bottom: 32px;
+		}
+		.flip-clock-row {
+			gap: 6px;
+		}
+		.colon {
+			font-size: 2.2rem;
+			transform: translateY(-2px);
+			margin: 0 -2px;
+		}
+		.view-title {
+			margin-bottom: 1.5rem;
+			font-size: 1rem;
+		}
+		.date-display {
+			font-size: 0.9rem;
+			margin-bottom: 1.5rem;
+		}
+		.ampm-badge {
+			font-size: 0.9rem;
+			margin-top: 1.5rem;
+		}
+		.progress-ring-container {
+			width: 180px;
+			height: 180px;
+		}
+		.progress-ring-svg {
+			width: 180px;
+			height: 180px;
+		}
+		.progress-ring-bg, .progress-ring-bar {
+			cx: 90px;
+			cy: 90px;
+			r: 76px;
+			stroke-width: 5px;
+		}
+		.progress-ring-bar {
+			/* 2 * pi * 76 = 477.52 */
+			stroke-dasharray: 477;
+			stroke-dashoffset: 477;
+		}
+		
+		#view-pomodoro .progress-ring-container {
+			--card-width: 30px;
+			--card-height: 40px;
+			--card-font-size: 1.8rem;
+			--card-radius: 4px;
+		}
+
+		#view-timer .progress-ring-container {
+			--card-width: 22px;
+			--card-height: 30px;
+			--card-font-size: 1.3rem;
+			--card-radius: 3px;
+		}
+
+		.compact .colon {
+			font-size: 1.5rem;
+			transform: translateY(-1px);
+			margin: 0;
+		}
+		.toast-tip {
+			bottom: 32px;
+			font-size: 0.7rem;
+		}
+		.laps-wrapper {
+			max-width: 260px;
+		}
+	}
+</style>
+
+<!-- CLIENT SCRIPT: CONTROLADOR PRINCIPAL DEL RELOJ -->
+<script>
+	import { 
+		playFlipSound, 
+		startAlarmSound, 
+		stopAlarmSound, 
+		setMute, 
+		getMute 
+	} from '../utils/audio.js';
+
+	// --- BASE DE DATOS DE TEMAS PREDEFINIDOS ---
+	const themes = [
+		{ name: "🍎 Mac Classic", bg: "linear-gradient(135deg, #0e0e10, #17171a)", card: "#2c2c2e", text: "#ffffff", pageText: "#ffffff", accent: "#ff9500" },
+		{ name: "✨ macOS Sonoma", bg: "linear-gradient(135deg, #b893f0, #e8a0ab, #89bde0)", card: "rgba(255,255,255,0.76)", text: "#1c1c1f", pageText: "#ffffff", accent: "#5e5ce6" },
+		{ name: "⌚ watchOS Ultra", bg: "linear-gradient(135deg, #000000, #0a0a0a)", card: "#161617", text: "#ff453a", pageText: "#ff453a", accent: "#ff453a" },
+		{ name: "🍊 Hermès Special", bg: "linear-gradient(135deg, #111112, #212124)", card: "#ff9500", text: "#000000", pageText: "#ff9500", accent: "#ff9500" },
+		{ name: "🧊 Glass Minimal", bg: "linear-gradient(135deg, #e5e5ea, #d1d1d6)", card: "rgba(255, 255, 255, 0.8)", text: "#1d1d1f", pageText: "#1d1d1f", accent: "#007aff" },
+		{ name: "🌌 iOS Aurora", bg: "linear-gradient(135deg, #0a1128, #1c0a35)", card: "rgba(255,255,255,0.12)", text: "#ffffff", pageText: "#f4f4f5", accent: "#bf5af2" },
+		{ name: "🎨 Apple Arcade", bg: "linear-gradient(135deg, #ff2d55, #ff9500)", card: "#ffffff", text: "#ff2d55", pageText: "#ffffff", accent: "#ff2d55" },
+		{ name: "🏁 Stealth Dark", bg: "linear-gradient(135deg, #000000, #040405)", card: "#0a0a0b", text: "rgba(255,255,255,0.22)", pageText: "rgba(255,255,255,0.45)", accent: "#8e8e93" }
+	];
+
+	// --- CONTROL DE ESTADO GLOBAL DE LA APP ---
+	const state = {
+		activeView: 'clock',
+		isMuted: false,
+		showSeconds: false,
+		format24h: false,
+		isMechSounds: true,
+		activeThemeIndex: 0,
+		customTheme: null,
+		alarms: [],
+		stopwatch: {
+			isRunning: false,
+			startTime: 0,
+			elapsedTime: 0,
+			interval: null,
+			laps: []
+		},
+		pomodoro: {
+			isRunning: false,
+			isBreak: false,
+			focusDuration: 25, // minutos
+			breakDuration: 5,  // minutos
+			timeLeft: 25 * 60,  // segundos
+			interval: null
+		},
+		timer: {
+			isRunning: false,
+			duration: 1800,  // 30 min por defecto (segundos)
+			timeLeft: 1800,
+			interval: null
+		}
+	};
+
+	let soundThrottleTimeout = null;
+	function triggerFlipSoundThrottled() {
+		if (soundThrottleTimeout || !state.isMechSounds || state.isMuted) return;
+		playFlipSound();
+		soundThrottleTimeout = setTimeout(() => {
+			soundThrottleTimeout = null;
+		}, 40);
+	}
+
+	// --- ACTUALIZADOR DE TARJETAS FLIP CON DIBUJO ---
+	function updateCardIfNeeded(cardId, newValue) {
+		const card = document.getElementById(cardId);
+		if (!card) return;
+
+		const topSpan = card.querySelector('.card-top span');
+		const bottomSpan = card.querySelector('.card-bottom span');
+		if (!topSpan || !bottomSpan) return;
+
+		if (topSpan.textContent === newValue) return;
+
+		const oldValue = topSpan.textContent;
+
+		// 1. Cambiamos el fondo inferior estático inmediatamente
+		bottomSpan.textContent = newValue;
+
+		// 2. Ejecutamos click acústico
+		triggerFlipSoundThrottled();
+
+		// 3. Creamos la solapa tridimensional
+		const flipper = document.createElement('div');
+		flipper.className = 'flipper-falling';
+		flipper.innerHTML = `<span>${oldValue}</span>`;
+		card.appendChild(flipper);
+
+		// 4. Cambiamos el fondo superior estático inmediatamente
+		topSpan.textContent = newValue;
+
+		flipper.addEventListener('animationend', () => {
+			flipper.remove();
+		});
+	}
+
+	// --- PERSISTENCIA LOCAL STORAGE ---
+	function loadSavedState() {
+		try {
+			const saved = localStorage.getItem('apple_flip_clock_state');
+			if (saved) {
+				const parsed = JSON.parse(saved);
+				state.isMuted = parsed.isMuted ?? false;
+				state.showSeconds = parsed.showSeconds ?? false;
+				state.format24h = parsed.format24h ?? false;
+				state.isMechSounds = parsed.isMechSounds ?? true;
+				state.activeThemeIndex = parsed.activeThemeIndex ?? 0;
+				state.customTheme = parsed.customTheme ?? null;
+				state.alarms = parsed.alarms ?? [];
+				
+				// Sincronizar UI
+				document.getElementById('setting-format-24h').checked = state.format24h;
+				document.getElementById('setting-show-seconds').checked = state.showSeconds;
+				document.getElementById('setting-mech-sounds').checked = state.isMechSounds;
+
+				setMute(state.isMuted);
+				updateMuteUI();
+			}
+		} catch (e) {
+			console.warn("Error leyendo localStorage:", e);
+		}
+	}
+
+	function saveState() {
+		try {
+			const toSave = {
+				isMuted: state.isMuted,
+				showSeconds: state.showSeconds,
+				format24h: state.format24h,
+				isMechSounds: state.isMechSounds,
+				activeThemeIndex: state.activeThemeIndex,
+				customTheme: state.customTheme,
+				alarms: state.alarms
+			};
+			localStorage.setItem('apple_flip_clock_state', JSON.stringify(toSave));
+		} catch (e) {
+			console.warn("Error guardando localStorage:", e);
+		}
+	}
+
+	// --- CAMBIO DE VISTA (TABS) ---
+	const views = ['clock', 'stopwatch', 'pomodoro', 'timer'];
+	
+	function switchView(targetView) {
+		if (!views.includes(targetView)) return;
+		state.activeView = targetView;
+
+		// Ocultar todas, mostrar objetivo
+		views.forEach(v => {
+			const panel = document.getElementById(`view-${v}`);
+			if (panel) {
+				panel.style.display = (v === targetView) ? 'flex' : 'none';
+			}
+		});
+
+		// Actualizar Sidebar
+		document.querySelectorAll('.menu-item[data-view]').forEach(item => {
+			const itemVal = item.getAttribute('data-view');
+			if (itemVal === targetView) {
+				item.classList.add('active');
+			} else {
+				item.classList.remove('active');
+			}
+		});
+
+		// Forzar dibujado inicial al cambiar de vista
+		if (targetView === 'clock') updateClock();
+		if (targetView === 'stopwatch') drawStopwatch();
+		if (targetView === 'pomodoro') drawPomodoro();
+		if (targetView === 'timer') drawTimer();
+	}
+
+	// Bindeo de clicks de la Sidebar
+	document.querySelectorAll('.menu-item[data-view]').forEach(item => {
+		item.addEventListener('click', (e) => {
+			const target = item.getAttribute('data-view');
+			switchView(target);
+			// Auto colapsar en móvil al seleccionar
+			if (window.innerWidth <= 600) {
+				const sidebar = document.getElementById('app-sidebar');
+				if (sidebar && sidebar.classList.contains('open')) {
+					toggleSidebar();
+				}
+			}
+		});
+	});
+
+	// --- TILT DE PARALLAX (3D TILT ON DESKTOP) ---
+	const parallaxTarget = document.getElementById('parallax-target');
+	const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+	if (!isTouchDevice && parallaxTarget) {
+		document.addEventListener('mousemove', (e) => {
+			const maxTilt = 10; // Grados
+			const x = (e.clientX / window.innerWidth - 0.5) * maxTilt;
+			const y = (e.clientY / window.innerHeight - 0.5) * -maxTilt;
+			
+			// Aplicar al contenedor 3D
+			parallaxTarget.style.setProperty('--tilt-x', `${y}deg`);
+			parallaxTarget.style.setProperty('--tilt-y', `${x}deg`);
+		});
+
+		// Retornar a cero suavemente al salir el cursor
+		document.addEventListener('mouseleave', () => {
+			parallaxTarget.style.setProperty('--tilt-x', '0deg');
+			parallaxTarget.style.setProperty('--tilt-y', '0deg');
+		});
+	}
+
+	// --- MANEJO DE TEMAS ---
+	function applyTheme(theme) {
+		document.documentElement.style.setProperty('--bg-gradient', theme.bg);
+		document.documentElement.style.setProperty('--flip-bg', theme.card);
+		document.documentElement.style.setProperty('--flip-text', theme.text);
+		document.documentElement.style.setProperty('--text-color', theme.pageText);
+		document.documentElement.style.setProperty('--accent-color', theme.accent);
+	}
+
+	function setThemeIndex(idx) {
+		state.activeThemeIndex = idx;
+		state.customTheme = null;
+		applyTheme(themes[idx]);
+		saveState();
+	}
+
+	function applyCustomTheme(custom) {
+		state.activeThemeIndex = -1;
+		state.customTheme = custom;
+		applyTheme(custom);
+		saveState();
+	}
+
+	function generateThemesGrid() {
+		const grid = document.getElementById('presets-grid');
+		if (!grid) return;
+		grid.innerHTML = '';
+
+		themes.forEach((theme, idx) => {
+			const card = document.createElement('div');
+			card.className = 'theme-card';
+			card.innerText = theme.name;
+			card.style.background = theme.bg;
+			card.style.color = theme.text;
+			card.style.borderColor = theme.accent;
+			card.addEventListener('click', () => {
+				setThemeIndex(idx);
+			});
+			grid.appendChild(card);
+		});
+	}
+
+	// --- CREADOR DE TEMA PERSONALIZADO ---
+	const applyCustomBtn = document.getElementById('apply-custom-theme-btn');
+	if (applyCustomBtn) {
+		applyCustomBtn.addEventListener('click', () => {
+			const bg1 = document.getElementById('custom-bg-1').value;
+			const bg2 = document.getElementById('custom-bg-2').value;
+			const cardColor = document.getElementById('custom-card-color').value;
+			const textColor = document.getElementById('custom-text-color').value;
+			const opacity = parseInt(document.getElementById('custom-card-opacity').value) / 100;
+
+			// Convertir hex de tarjeta a rgba con opacidad
+			const r = parseInt(cardColor.slice(1, 3), 16);
+			const g = parseInt(cardColor.slice(3, 5), 16);
+			const b = parseInt(cardColor.slice(5, 7), 16);
+			const cardRgba = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+
+			const custom = {
+				name: "Personalizado",
+				bg: `linear-gradient(135deg, ${bg1}, ${bg2})`,
+				card: cardRgba,
+				text: textColor,
+				pageText: textColor,
+				accent: textColor // Usar el color del texto para acentos
+			};
+
+			applyCustomTheme(custom);
+		});
+	}
+
+	// --- SISTEMA DE ALARMAS ---
+	const addAlarmBtn = document.getElementById('add-alarm-btn');
+	if (addAlarmBtn) {
+		addAlarmBtn.addEventListener('click', () => {
+			const hrInput = document.getElementById('alarm-hour');
+			const minInput = document.getElementById('alarm-minute');
+			const lblInput = document.getElementById('alarm-label');
+
+			let hr = parseInt(hrInput.value);
+			let min = parseInt(minInput.value);
+			let label = lblInput.value.trim() || "Alarma";
+
+			if (isNaN(hr) || hr < 0 || hr > 23 || isNaN(min) || min < 0 || min > 59) {
+				alert("Por favor introduce una hora válida (0-23) y minutos (0-59).");
+				return;
+			}
+
+			const newAlarm = {
+				id: Date.now().toString(),
+				hour: hr,
+				minute: min,
+				label: label,
+				active: true
+			};
+
+			state.alarms.push(newAlarm);
+			saveState();
+			drawAlarmsList();
+			updateActiveAlarmBadge();
+
+			// Limpiar campos
+			hrInput.value = '';
+			minInput.value = '';
+			lblInput.value = '';
+		});
+	}
+
+	function deleteAlarm(id) {
+		state.alarms = state.alarms.filter(a => a.id !== id);
+		saveState();
+		drawAlarmsList();
+		updateActiveAlarmBadge();
+	}
+
+	function toggleAlarmActive(id) {
+		const alarm = state.alarms.find(a => a.id === id);
+		if (alarm) {
+			alarm.active = !alarm.active;
+			saveState();
+			updateActiveAlarmBadge();
+		}
+	}
+
+	function updateActiveAlarmBadge() {
+		const badge = document.getElementById('active-alarms-badge');
+		if (!badge) return;
+		const activeCount = state.alarms.filter(a => a.active).length;
+		badge.style.display = activeCount > 0 ? 'inline-block' : 'none';
+	}
+
+	function drawAlarmsList() {
+		const list = document.getElementById('sidebar-alarms-list');
+		if (!list) return;
+
+		if (state.alarms.length === 0) {
+			list.innerHTML = '<p class="empty-list-text">No hay alarmas configuradas.</p>';
+			return;
+		}
+
+		list.innerHTML = '';
+		state.alarms.forEach(alarm => {
+			const item = document.createElement('div');
+			item.className = 'alarm-item';
+			
+			const hrStr = String(alarm.hour).padStart(2, '0');
+			const minStr = String(alarm.minute).padStart(2, '0');
+
+			item.innerHTML = `
+				<div class="alarm-info">
+					<span class="alarm-time">${hrStr}:${minStr}</span>
+					<span class="alarm-lbl">${alarm.label}</span>
+				</div>
+				<div class="alarm-actions">
+					<input type="checkbox" class="alarm-toggle" ${alarm.active ? 'checked' : ''} data-id="${alarm.id}" />
+					<button class="delete-alarm-btn" data-id="${alarm.id}">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+							<polyline points="3 6 5 6 21 6"></polyline>
+							<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+						</svg>
+					</button>
+				</div>
+			`;
+
+			// Eventos
+			item.querySelector('.alarm-toggle').addEventListener('change', (e) => {
+				toggleAlarmActive(alarm.id);
+			});
+			item.querySelector('.delete-alarm-btn').addEventListener('click', () => {
+				deleteAlarm(alarm.id);
+			});
+
+			list.appendChild(item);
+		});
+	}
+
+	// --- DISPARADOR DE OVERLAY DE ALARMA ---
+	let triggeredAlarmData = null;
+	function triggerAlarm(alarm) {
+		triggeredAlarmData = alarm;
+		
+		const overlay = document.getElementById('alarm-triggered-overlay');
+		const labelEl = document.getElementById('triggered-alarm-label');
+		const timeEl = document.getElementById('triggered-alarm-time');
+
+		if (labelEl) labelEl.textContent = alarm.label || "¡Alarma!";
+		if (timeEl) {
+			const h = String(alarm.hour).padStart(2, '0');
+			const m = String(alarm.minute).padStart(2, '0');
+			timeEl.textContent = `${h}:${m}`;
+		}
+
+		if (overlay) overlay.style.display = 'flex';
+		
+		// Iniciar sonido arpegiado Apple
+		startAlarmSound();
+	}
+
+	function dismissAlarm() {
+		stopAlarmSound();
+		const overlay = document.getElementById('alarm-triggered-overlay');
+		if (overlay) overlay.style.display = 'none';
+
+		// Desactivar alarma temporalmente para que no se dispare repetidamente el mismo minuto
+		if (triggeredAlarmData && triggeredAlarmData.id) {
+			// Si no es una alarma de sistema de temporizadores:
+			if (state.alarms.some(a => a.id === triggeredAlarmData.id)) {
+				const activeAlarm = state.alarms.find(a => a.id === triggeredAlarmData.id);
+				if (activeAlarm) activeAlarm.active = false;
+				saveState();
+				drawAlarmsList();
+				updateActiveAlarmBadge();
+			}
+		}
+		triggeredAlarmData = null;
+	}
+
+	function snoozeAlarm() {
+		stopAlarmSound();
+		const overlay = document.getElementById('alarm-triggered-overlay');
+		if (overlay) overlay.style.display = 'none';
+
+		if (triggeredAlarmData) {
+			// Posponer 5 minutos: Agregar nueva alarma silenciosa temporal
+			const now = new Date();
+			const snoozeTime = new Date(now.getTime() + 5 * 60 * 1000);
+			
+			const snoozeAlarmObj = {
+				id: 'snooze-' + Date.now(),
+				hour: snoozeTime.getHours(),
+				minute: snoozeTime.getMinutes(),
+				label: `Pospuesto: ${triggeredAlarmData.label}`,
+				active: true
+			};
+			
+			state.alarms.push(snoozeAlarmObj);
+			saveState();
+			drawAlarmsList();
+			updateActiveAlarmBadge();
+		}
+		triggeredAlarmData = null;
+	}
+
+	// Bindeo botones overlay
+	document.getElementById('btn-alarm-dismiss')?.addEventListener('click', dismissAlarm);
+	document.getElementById('btn-alarm-snooze')?.addEventListener('click', snoozeAlarm);
+
+	// Chequeo de alarmas cada minuto
+	let lastCheckedMinute = -1;
+	function checkAlarms() {
+		const now = new Date();
+		const currentHour = now.getHours();
+		const currentMin = now.getMinutes();
+
+		if (currentMin === lastCheckedMinute) return; // Chequear una sola vez por minuto
+		lastCheckedMinute = currentMin;
+
+		state.alarms.forEach(alarm => {
+			if (alarm.active && alarm.hour === currentHour && alarm.minute === currentMin) {
+				triggerAlarm(alarm);
+			}
+		});
+	}
+
+	// --- VISTA 1: CONTROLADOR DE RELOJ ---
+	function updateClock() {
+		if (state.activeView !== 'clock') return;
+
+		const now = new Date();
+		
+		// 1. Mostrar fecha en formato macOS / iOS
+		const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+		const dateEl = document.getElementById('clock-date');
+		if (dateEl) {
+			dateEl.textContent = now.toLocaleDateString('es-ES', dateOptions).toUpperCase();
+		}
+
+		// 2. Formato Horas
+		let hours = now.getHours();
+		let ampm = hours >= 12 ? 'PM' : 'AM';
+		
+		if (!state.format24h) {
+			hours = hours % 12 || 12;
+		}
+
+		const hStr = String(hours).padStart(2, '0');
+		const mStr = String(now.getMinutes()).padStart(2, '0');
+		const sStr = String(now.getSeconds()).padStart(2, '0');
+
+		// 3. Actualizar Tarjetas
+		updateCardIfNeeded('h1', hStr[0]);
+		updateCardIfNeeded('h2', hStr[1]);
+		updateCardIfNeeded('m1', mStr[0]);
+		updateCardIfNeeded('m2', mStr[1]);
+
+		const sGroup = document.getElementById('clock-s-group');
+		const sColon = document.getElementById('clock-s-colon');
+
+		if (state.showSeconds) {
+			if (sGroup) sGroup.style.display = 'flex';
+			if (sColon) sColon.style.display = 'block';
+			updateCardIfNeeded('s1', sStr[0]);
+			updateCardIfNeeded('s2', sStr[1]);
+		} else {
+			if (sGroup) sGroup.style.display = 'none';
+			if (sColon) sColon.style.display = 'none';
+		}
+
+		// 4. AM/PM Badge
+		const ampmEl = document.getElementById('clock-ampm');
+		if (ampmEl) {
+			ampmEl.textContent = ampm;
+			ampmEl.style.display = state.format24h ? 'none' : 'block';
+		}
+	}
+
+	// --- VISTA 2: CONTROLADOR CRONÓMETRO ---
+	function drawStopwatch() {
+		const time = state.stopwatch.elapsedTime;
+		
+		const mins = Math.floor(time / 60000);
+		const secs = Math.floor((time % 60000) / 1000);
+		const ms = Math.floor((time % 1000) / 10); // Centésimas
+
+		const mStr = String(mins).padStart(2, '0');
+		const sStr = String(secs).padStart(2, '0');
+		const msStr = String(ms).padStart(2, '0');
+
+		updateCardIfNeeded('sw-m1', mStr[0]);
+		updateCardIfNeeded('sw-m2', mStr[1]);
+		updateCardIfNeeded('sw-s1', sStr[0]);
+		updateCardIfNeeded('sw-s2', sStr[1]);
+		updateCardIfNeeded('sw-ms1', msStr[0]);
+		updateCardIfNeeded('sw-ms2', msStr[1]);
+	}
+
+	function runStopwatchLoop() {
+		const now = Date.now();
+		state.stopwatch.elapsedTime = now - state.stopwatch.startTime;
+		drawStopwatch();
+	}
+
+	const swStartBtn = document.getElementById('sw-start-btn');
+	const swLapBtn = document.getElementById('sw-lap-btn');
+	const swResetBtn = document.getElementById('sw-reset-btn');
+
+	if (swStartBtn && swLapBtn && swResetBtn) {
+		swStartBtn.addEventListener('click', () => {
+			const sw = state.stopwatch;
+			if (!sw.isRunning) {
+				// INICIAR
+				sw.isRunning = true;
+				sw.startTime = Date.now() - sw.elapsedTime;
+				sw.interval = setInterval(runStopwatchLoop, 30); // 30ms para suavidad de centésimas
+				
+				swStartBtn.textContent = 'Pausa';
+				swStartBtn.style.background = '#ff3b30'; // Botón rojo en pausa
+				swStartBtn.style.color = '#fff';
+				swLapBtn.disabled = false;
+				swResetBtn.disabled = true;
+			} else {
+				// PAUSAR
+				sw.isRunning = false;
+				clearInterval(sw.interval);
+				sw.interval = null;
+
+				swStartBtn.textContent = 'Iniciar';
+				swStartBtn.style.background = 'var(--text-color)';
+				swStartBtn.style.color = '#000';
+				swLapBtn.disabled = true;
+				swResetBtn.disabled = false;
+			}
+		});
+
+		swLapBtn.addEventListener('click', () => {
+			const sw = state.stopwatch;
+			if (!sw.isRunning) return;
+
+			const lapTime = sw.elapsedTime;
+			const lastLapTotal = sw.laps.length > 0 ? sw.laps[0].total : 0;
+			const lapDelta = lapTime - lastLapTotal;
+
+			const newLap = {
+				num: sw.laps.length + 1,
+				delta: lapDelta,
+				total: lapTime
+			};
+
+			sw.laps.unshift(newLap); // Vuelta más reciente arriba
+			drawLapsList();
+		});
+
+		swResetBtn.addEventListener('click', () => {
+			const sw = state.stopwatch;
+			sw.isRunning = false;
+			clearInterval(sw.interval);
+			sw.interval = null;
+			sw.elapsedTime = 0;
+			sw.laps = [];
+
+			drawStopwatch();
+			drawLapsList();
+
+			swStartBtn.textContent = 'Iniciar';
+			swStartBtn.style.background = 'var(--text-color)';
+			swStartBtn.style.color = '#000';
+			swLapBtn.disabled = true;
+			swResetBtn.disabled = true;
+		});
+	}
+
+	function formatTimeMs(time) {
+		const mins = Math.floor(time / 60000);
+		const secs = Math.floor((time % 60000) / 1000);
+		const ms = Math.floor((time % 1000) / 10);
+		return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+	}
+
+	function drawLapsList() {
+		const list = document.getElementById('laps-list');
+		if (!list) return;
+		list.innerHTML = '';
+
+		state.stopwatch.laps.forEach(lap => {
+			const tr = document.createElement('tr');
+			tr.innerHTML = `
+				<td>Vuelta ${lap.num}</td>
+				<td>+${formatTimeMs(lap.delta)}</td>
+				<td>${formatTimeMs(lap.total)}</td>
+			`;
+			list.appendChild(tr);
+		});
+	}
+
+	// --- VISTA 3: CONTROLADOR POMODORO ---
+	function drawPomodoro() {
+		const minutes = Math.floor(state.pomodoro.timeLeft / 60);
+		const seconds = state.pomodoro.timeLeft % 60;
+
+		const mStr = String(minutes).padStart(2, '0');
+		const sStr = String(seconds).padStart(2, '0');
+
+		updateCardIfNeeded('pom-m1', mStr[0]);
+		updateCardIfNeeded('pom-m2', mStr[1]);
+		updateCardIfNeeded('pom-s1', sStr[0]);
+		updateCardIfNeeded('pom-s2', sStr[1]);
+
+		// Anillo de progreso circular
+		const totalDuration = (state.pomodoro.isBreak ? state.pomodoro.breakDuration : state.pomodoro.focusDuration) * 60;
+		const pct = state.pomodoro.timeLeft / totalDuration;
+		
+		const bar = document.getElementById('pom-progress-bar');
+		if (bar) {
+			const sizeFactor = window.innerWidth <= 600 ? 477 : (window.innerWidth <= 900 ? 691 : 848);
+			bar.style.strokeDashoffset = String(sizeFactor * (1 - pct));
+		}
+	}
+
+	function triggerPomodoroEnd() {
+		const pom = state.pomodoro;
+		const nextBreakState = !pom.isBreak;
+		
+		// Sonido alarma Pomodoro finalizado
+		triggerAlarm({
+			id: 'pomodoro-system',
+			hour: new Date().getHours(),
+			minute: new Date().getMinutes(),
+			label: pom.isBreak ? "¡Descanso Terminado! A trabajar." : "¡Focus Terminado! Momento de descansar."
+		});
+
+		// Cambiar estado
+		pom.isBreak = nextBreakState;
+		pom.timeLeft = (pom.isBreak ? pom.breakDuration : pom.focusDuration) * 60;
+		pom.isRunning = false;
+		clearInterval(pom.interval);
+		pom.interval = null;
+
+		const statusBadge = document.getElementById('pomodoro-status');
+		if (statusBadge) {
+			statusBadge.textContent = pom.isBreak ? "DESCANSO" : "TRABAJO";
+			statusBadge.style.color = pom.isBreak ? "#30d158" : "var(--accent-color)";
+			statusBadge.style.borderColor = pom.isBreak ? "#30d158" : "var(--accent-color)";
+			statusBadge.style.background = pom.isBreak ? "rgba(48, 209, 88, 0.08)" : "rgba(255, 149, 0, 0.08)";
+		}
+
+		const pomStartBtn = document.getElementById('pom-start-btn');
+		if (pomStartBtn) {
+			pomStartBtn.textContent = 'Iniciar';
+			pomStartBtn.style.background = 'var(--text-color)';
+			pomStartBtn.style.color = '#000';
+		}
+
+		drawPomodoro();
+	}
+
+	function runPomodoroTick() {
+		const pom = state.pomodoro;
+		if (pom.timeLeft <= 0) {
+			triggerPomodoroEnd();
+			return;
+		}
+		pom.timeLeft--;
+		drawPomodoro();
+	}
+
+	const pomStartBtn = document.getElementById('pom-start-btn');
+	const pomResetBtn = document.getElementById('pom-reset-btn');
+
+	if (pomStartBtn && pomResetBtn) {
+		pomStartBtn.addEventListener('click', () => {
+			const pom = state.pomodoro;
+			if (!pom.isRunning) {
+				// INICIAR
+				pom.isRunning = true;
+				pom.interval = setInterval(runPomodoroTick, 1000);
+				pomStartBtn.textContent = 'Pausa';
+				pomStartBtn.style.background = '#ff3b30';
+				pomStartBtn.style.color = '#fff';
+			} else {
+				// PAUSAR
+				pom.isRunning = false;
+				clearInterval(pom.interval);
+				pom.interval = null;
+				pomStartBtn.textContent = 'Iniciar';
+				pomStartBtn.style.background = 'var(--text-color)';
+				pomStartBtn.style.color = '#000';
+			}
+		});
+
+		pomResetBtn.addEventListener('click', () => {
+			const pom = state.pomodoro;
+			pom.isRunning = false;
+			clearInterval(pom.interval);
+			pom.interval = null;
+			
+			pom.isBreak = false;
+			pom.timeLeft = pom.focusDuration * 60;
+
+			const statusBadge = document.getElementById('pomodoro-status');
+			if (statusBadge) {
+				statusBadge.textContent = "TRABAJO";
+				statusBadge.style.color = "var(--accent-color)";
+				statusBadge.style.borderColor = "var(--accent-color)";
+				statusBadge.style.background = "rgba(255, 149, 0, 0.08)";
+			}
+
+			pomStartBtn.textContent = 'Iniciar';
+			pomStartBtn.style.background = 'var(--text-color)';
+			pomStartBtn.style.color = '#000';
+			
+			drawPomodoro();
+		});
+	}
+
+	// Presets Pomodoro
+	document.querySelectorAll('#pom-presets .preset-pill').forEach(btn => {
+		btn.addEventListener('click', () => {
+			document.querySelectorAll('#pom-presets .preset-pill').forEach(b => b.classList.remove('active'));
+			btn.classList.add('active');
+
+			const focus = parseInt(btn.getAttribute('data-focus') || "25");
+			const breakT = parseInt(btn.getAttribute('data-break') || "5");
+
+			const pom = state.pomodoro;
+			pom.isRunning = false;
+			clearInterval(pom.interval);
+			pom.interval = null;
+
+			pom.focusDuration = focus;
+			pom.breakDuration = breakT;
+			pom.isBreak = false;
+			pom.timeLeft = focus * 60;
+
+			const statusBadge = document.getElementById('pomodoro-status');
+			if (statusBadge) {
+				statusBadge.textContent = "TRABAJO";
+				statusBadge.style.color = "var(--accent-color)";
+				statusBadge.style.borderColor = "var(--accent-color)";
+				statusBadge.style.background = "rgba(255, 149, 0, 0.08)";
+			}
+
+			if (pomStartBtn) {
+				pomStartBtn.textContent = 'Iniciar';
+				pomStartBtn.style.background = 'var(--text-color)';
+				pomStartBtn.style.color = '#000';
+			}
+
+			drawPomodoro();
+		});
+	});
+
+	// --- VISTA 4: CONTROLADOR TEMPORIZADOR (TIMER) ---
+	function drawTimer() {
+		const hours = Math.floor(state.timer.timeLeft / 3600);
+		const minutes = Math.floor((state.timer.timeLeft % 3600) / 60);
+		const seconds = state.timer.timeLeft % 60;
+
+		const hStr = String(hours).padStart(2, '0');
+		const mStr = String(minutes).padStart(2, '0');
+		const sStr = String(seconds).padStart(2, '0');
+
+		updateCardIfNeeded('tm-h1', hStr[0]);
+		updateCardIfNeeded('tm-h2', hStr[1]);
+		updateCardIfNeeded('tm-m1', mStr[0]);
+		updateCardIfNeeded('tm-m2', mStr[1]);
+		updateCardIfNeeded('tm-s1', sStr[0]);
+		updateCardIfNeeded('tm-s2', sStr[1]);
+
+		// Anillo de progreso
+		const pct = state.timer.timeLeft / state.timer.duration;
+		const bar = document.getElementById('timer-progress-bar');
+		if (bar) {
+			const sizeFactor = window.innerWidth <= 600 ? 477 : (window.innerWidth <= 900 ? 691 : 848);
+			bar.style.strokeDashoffset = String(sizeFactor * (1 - pct));
+		}
+	}
+
+	function triggerTimerEnd() {
+		const tm = state.timer;
+		triggerAlarm({
+			id: 'timer-system',
+			hour: new Date().getHours(),
+			minute: new Date().getMinutes(),
+			label: "Temporizador Terminado"
+		});
+
+		tm.timeLeft = tm.duration;
+		tm.isRunning = false;
+		clearInterval(tm.interval);
+		tm.interval = null;
+
+		const tmStartBtn = document.getElementById('timer-start-btn');
+		if (tmStartBtn) {
+			tmStartBtn.textContent = 'Iniciar';
+			tmStartBtn.style.background = 'var(--text-color)';
+			tmStartBtn.style.color = '#000';
+		}
+
+		drawTimer();
+	}
+
+	function runTimerTick() {
+		const tm = state.timer;
+		if (tm.timeLeft <= 0) {
+			triggerTimerEnd();
+			return;
+		}
+		tm.timeLeft--;
+		drawTimer();
+	}
+
+	const tmStartBtn = document.getElementById('timer-start-btn');
+	const tmResetBtn = document.getElementById('timer-reset-btn');
+
+	if (tmStartBtn && tmResetBtn) {
+		tmStartBtn.addEventListener('click', () => {
+			const tm = state.timer;
+			if (!tm.isRunning) {
+				tm.isRunning = true;
+				tm.interval = setInterval(runTimerTick, 1000);
+				tmStartBtn.textContent = 'Pausa';
+				tmStartBtn.style.background = '#ff3b30';
+				tmStartBtn.style.color = '#fff';
+			} else {
+				tm.isRunning = false;
+				clearInterval(tm.interval);
+				tm.interval = null;
+				tmStartBtn.textContent = 'Iniciar';
+				tmStartBtn.style.background = 'var(--text-color)';
+				tmStartBtn.style.color = '#000';
+			}
+		});
+
+		tmResetBtn.addEventListener('click', () => {
+			const tm = state.timer;
+			tm.isRunning = false;
+			clearInterval(tm.interval);
+			tm.interval = null;
+			tm.timeLeft = tm.duration;
+
+			tmStartBtn.textContent = 'Iniciar';
+			tmStartBtn.style.background = 'var(--text-color)';
+			tmStartBtn.style.color = '#000';
+			
+			drawTimer();
+		});
+	}
+
+	// Presets Timer
+	document.querySelectorAll('#timer-presets .preset-pill').forEach(btn => {
+		btn.addEventListener('click', () => {
+			document.querySelectorAll('#timer-presets .preset-pill').forEach(b => b.classList.remove('active'));
+			btn.classList.add('active');
+
+			const secs = parseInt(btn.getAttribute('data-seconds') || "1800");
+			const tm = state.timer;
+			tm.isRunning = false;
+			clearInterval(tm.interval);
+			tm.interval = null;
+			tm.duration = secs;
+			tm.timeLeft = secs;
+
+			if (tmStartBtn) {
+				tmStartBtn.textContent = 'Iniciar';
+				tmStartBtn.style.background = 'var(--text-color)';
+				tmStartBtn.style.color = '#000';
+			}
+
+			drawTimer();
+		});
+	});
+
+	// --- AJUSTES Y BINDEOS LATERALES ---
+	const settingsSidebar = document.getElementById('settings-sidebar');
+	const sidebarSettingsBtn = document.getElementById('sidebar-settings-btn');
+	const closeSettingsBtn = document.getElementById('close-settings-btn');
+
+	function toggleSettings() {
+		if (settingsSidebar) {
+			settingsSidebar.classList.toggle('open');
+		}
+		// Desaparecer el toast al abrir
+		const toast = document.getElementById('toast-tip');
+		if (toast) toast.style.opacity = '0';
+	}
+
+	if (sidebarSettingsBtn) sidebarSettingsBtn.addEventListener('click', toggleSettings);
+	if (closeSettingsBtn) closeSettingsBtn.addEventListener('click', toggleSettings);
+
+	// --- MENU LATERAL (SIDEBAR) ---
+	const sidebar = document.getElementById('app-sidebar');
+	const hamburgerBtn = document.getElementById('hamburger-btn');
+
+	function toggleSidebar() {
+		if (sidebar && hamburgerBtn) {
+			const isOpen = sidebar.classList.toggle('open');
+			hamburgerBtn.setAttribute('aria-expanded', String(isOpen));
+		}
+		// Ocultar toast
+		const toast = document.getElementById('toast-tip');
+		if (toast) toast.style.opacity = '0';
+	}
+
+	if (hamburgerBtn) hamburgerBtn.addEventListener('click', toggleSidebar);
+
+	// Cerrar sidebar al hacer click fuera en móvil/escritorio
+	document.addEventListener('click', (e) => {
+		if (sidebar && sidebar.classList.contains('open') && hamburgerBtn) {
+			if (!sidebar.contains(e.target) && !hamburgerBtn.contains(e.target)) {
+				toggleSidebar();
+			}
+		}
+	});
+
+	// --- ATAJOS DE TECLADO ---
+	window.addEventListener('keydown', (e) => {
+		// Ignorar atajos si el usuario escribe en un campo de texto
+		const activeTag = document.activeElement ? document.activeElement.tagName.toLowerCase() : '';
+		if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') {
+			return;
+		}
+
+		const key = e.key.toLowerCase();
+
+		// Interceptar teclas si suena la alarma
+		if (triggeredAlarmData) {
+			if (key === 'd' || key === 'escape' || key === 'enter') {
+				e.preventDefault();
+				dismissAlarm();
+				return;
+			}
+			if (key === 's') {
+				e.preventDefault();
+				snoozeAlarm();
+				return;
+			}
+		}
+
+		// Menú y Ajustes
+		if (key === 'h' || key === 'escape') {
+			e.preventDefault();
+			toggleSidebar();
+			return;
+		}
+		if (key === '.') {
+			e.preventDefault();
+			toggleSettings();
+			return;
+		}
+
+		// Silenciar
+		if (key === 'm') {
+			e.preventDefault();
+			state.isMuted = !state.isMuted;
+			setMute(state.isMuted);
+			updateMuteUI();
+			saveState();
+			return;
+		}
+
+		// Cambio de Vistas
+		if (key === '1' || key === 'c') {
+			e.preventDefault();
+			switchView('clock');
+			return;
+		}
+		if (key === '2' || key === 's') {
+			e.preventDefault();
+			switchView('stopwatch');
+			return;
+		}
+		if (key === '3' || key === 'p') {
+			e.preventDefault();
+			switchView('pomodoro');
+			return;
+		}
+		if (key === '4' || key === 't') {
+			e.preventDefault();
+			switchView('timer');
+			return;
+		}
+
+		// Iniciar / Pausar (Espacio)
+		if (e.key === ' ') {
+			e.preventDefault();
+			if (state.activeView === 'stopwatch') {
+				document.getElementById('sw-start-btn')?.click();
+			} else if (state.activeView === 'pomodoro') {
+				document.getElementById('pom-start-btn')?.click();
+			} else if (state.activeView === 'timer') {
+				document.getElementById('timer-start-btn')?.click();
+			}
+			return;
+		}
+
+		// Reiniciar (R)
+		if (key === 'r') {
+			e.preventDefault();
+			if (state.activeView === 'stopwatch') {
+				document.getElementById('sw-reset-btn')?.click();
+			} else if (state.activeView === 'pomodoro') {
+				document.getElementById('pom-reset-btn')?.click();
+			} else if (state.activeView === 'timer') {
+				document.getElementById('timer-reset-btn')?.click();
+			}
+			return;
+		}
+
+		// Vuelta / Lap (L - sólo cronómetro)
+		if (key === 'l') {
+			e.preventDefault();
+			if (state.activeView === 'stopwatch') {
+				document.getElementById('sw-lap-btn')?.click();
+			}
+			return;
+		}
+	});
+
+	// Cambio de formatos en ajustes
+	document.getElementById('setting-format-24h')?.addEventListener('change', (e) => {
+		state.format24h = e.target.checked;
+		saveState();
+		updateClock();
+	});
+
+	document.getElementById('setting-show-seconds')?.addEventListener('change', (e) => {
+		state.showSeconds = e.target.checked;
+		saveState();
+		updateClock();
+	});
+
+	document.getElementById('setting-mech-sounds')?.addEventListener('change', (e) => {
+		state.isMechSounds = e.target.checked;
+		saveState();
+	});
+
+	// --- MUTE CONTROL ---
+	const sidebarMuteBtn = document.getElementById('sidebar-mute-btn');
+	const volOnIcon = sidebarMuteBtn?.querySelector('.vol-icon-on');
+	const volOffIcon = sidebarMuteBtn?.querySelector('.vol-icon-off');
+
+	function updateMuteUI() {
+		if (state.isMuted) {
+			if (volOnIcon) volOnIcon.style.display = 'none';
+			if (volOffIcon) volOffIcon.style.display = 'block';
+			if (sidebarMuteBtn) sidebarMuteBtn.classList.add('active');
+		} else {
+			if (volOnIcon) volOnIcon.style.display = 'block';
+			if (volOffIcon) volOffIcon.style.display = 'none';
+			if (sidebarMuteBtn) sidebarMuteBtn.classList.remove('active');
+		}
+	}
+
+	if (sidebarMuteBtn) {
+		sidebarMuteBtn.addEventListener('click', () => {
+			state.isMuted = !state.isMuted;
+			setMute(state.isMuted);
+			updateMuteUI();
+			saveState();
+		});
+	}
+
+	// --- INICIALIZACIONES INICIALES ---
+	loadSavedState();
+	generateThemesGrid();
+
+	// Aplicar tema cargado
+	if (state.customTheme) {
+		applyTheme(state.customTheme);
+	} else {
+		applyTheme(themes[state.activeThemeIndex]);
+	}
+
+	drawAlarmsList();
+	updateActiveAlarmBadge();
+
+	// Ciclo de reloj (200ms para alta precisión)
+	setInterval(() => {
+		updateClock();
+		checkAlarms();
+	}, 200);
+
+	updateClock();
+
+	// Animación de desvanecimiento del Toast
+	setTimeout(() => {
+		const toast = document.getElementById('toast-tip');
+		if (toast) toast.style.opacity = '0';
+	}, 6000);
+</script>

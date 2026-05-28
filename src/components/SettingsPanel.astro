@@ -1,0 +1,556 @@
+---
+---
+
+<div class="settings-panel" id="settings-sidebar">
+    <div class="settings-header">
+        <h2>Ajustes</h2>
+        <button class="close-sidebar-btn" id="close-settings-btn" aria-label="Cerrar ajustes">
+            Listo
+        </button>
+    </div>
+
+    <div class="settings-content">
+        <!-- SECCIÓN 1: FORMATOS -->
+        <section class="settings-section">
+            <h3 class="section-title">Visualización</h3>
+            <div class="setting-row">
+                <span>Formato de 24 Horas</span>
+                <label class="switch">
+                    <input type="checkbox" id="setting-format-24h" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-row">
+                <span>Mostrar Segundos</span>
+                <label class="switch">
+                    <input type="checkbox" id="setting-show-seconds" />
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-row">
+                <span>Efecto Click Mecánico</span>
+                <label class="switch">
+                    <input type="checkbox" id="setting-mech-sounds" checked />
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </section>
+
+        <!-- SECCIÓN ATAJOS DE TECLADO -->
+        <section class="settings-section">
+            <h3 class="section-title">Atajos de Teclado</h3>
+            <div class="shortcuts-list">
+                <div class="shortcut-item">
+                    <span>Menú Lateral</span>
+                    <div><kbd>H</kbd> o <kbd>Esc</kbd></div>
+                </div>
+                <div class="shortcut-item">
+                    <span>Ajustes</span>
+                    <kbd>.</kbd>
+                </div>
+                <div class="shortcut-item">
+                    <span>Silenciar</span>
+                    <kbd>M</kbd>
+                </div>
+                <div class="shortcut-item">
+                    <span>Reloj</span>
+                    <div><kbd>1</kbd> / <kbd>C</kbd></div>
+                </div>
+                <div class="shortcut-item">
+                    <span>Cronómetro</span>
+                    <div><kbd>2</kbd> / <kbd>S</kbd></div>
+                </div>
+                <div class="shortcut-item">
+                    <span>Pomodoro</span>
+                    <div><kbd>3</kbd> / <kbd>P</kbd></div>
+                </div>
+                <div class="shortcut-item">
+                    <span>Temporizador</span>
+                    <div><kbd>4</kbd> / <kbd>T</kbd></div>
+                </div>
+                <div class="shortcut-item">
+                    <span>Iniciar / Pausa</span>
+                    <kbd>Espacio</kbd>
+                </div>
+                <div class="shortcut-item">
+                    <span>Reiniciar</span>
+                    <kbd>R</kbd>
+                </div>
+                <div class="shortcut-item">
+                    <span>Vuelta (Crono)</span>
+                    <kbd>L</kbd>
+                </div>
+                <div class="shortcut-item">
+                    <span>Descartar Alarma</span>
+                    <kbd>D</kbd>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: ALARMAS -->
+        <section class="settings-section">
+            <h3 class="section-title">Añadir Alarma</h3>
+            <div class="alarm-creator">
+                <div class="time-inputs">
+                    <input type="number" id="alarm-hour" min="0" max="23" placeholder="HH" class="time-input" />
+                    <span class="time-sep">:</span>
+                    <input type="number" id="alarm-minute" min="0" max="59" placeholder="MM" class="time-input" />
+                </div>
+                <input type="text" id="alarm-label" placeholder="Etiqueta (ej. Despertar)" class="text-input" />
+                <button id="add-alarm-btn" class="action-btn">Agregar Alarma</button>
+            </div>
+
+            <h3 class="section-title" style="margin-top: 15px;">Mis Alarmas</h3>
+            <div class="alarms-list" id="sidebar-alarms-list">
+                <!-- Alarmas dinámicas -->
+                <p class="empty-list-text">No hay alarmas configuradas.</p>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: TEMAS PREDEFINIDOS -->
+        <section class="settings-section">
+            <h3 class="section-title">Temas Clásicos</h3>
+            <div class="themes-grid" id="presets-grid">
+                <!-- Temas inyectados por JS -->
+            </div>
+        </section>
+
+        <!-- SECCIÓN 4: CREADOR DE TEMA -->
+        <section class="settings-section">
+            <h3 class="section-title">Creador de Temas</h3>
+            <div class="theme-creator">
+                <div class="color-picker-row">
+                    <div class="color-picker-cell">
+                        <label for="custom-bg-1">Fondo 1</label>
+                        <input type="color" id="custom-bg-1" value="#1c1c1e" />
+                    </div>
+                    <div class="color-picker-cell">
+                        <label for="custom-bg-2">Fondo 2</label>
+                        <input type="color" id="custom-bg-2" value="#111112" />
+                    </div>
+                </div>
+                <div class="color-picker-row">
+                    <div class="color-picker-cell">
+                        <label for="custom-card-color">Tarjetas</label>
+                        <input type="color" id="custom-card-color" value="#2c2c2e" />
+                    </div>
+                    <div class="color-picker-cell">
+                        <label for="custom-text-color">Texto</label>
+                        <input type="color" id="custom-text-color" value="#ffffff" />
+                    </div>
+                </div>
+                <div class="setting-row" style="margin-top: 10px; background: transparent; padding: 0;">
+                    <span>Opacidad Tarjeta</span>
+                    <input type="range" id="custom-card-opacity" min="10" max="100" value="95" class="range-slider" />
+                </div>
+                <button id="apply-custom-theme-btn" class="action-btn secondary-btn" style="margin-top: 12px;">Aplicar Tema Personalizado</button>
+            </div>
+        </section>
+    </div>
+</div>
+
+<style>
+    .settings-panel {
+        position: fixed;
+        right: -380px;
+        top: 0;
+        bottom: 0;
+        width: 360px;
+        background: rgba(20, 20, 22, 0.82);
+        backdrop-filter: blur(45px);
+        -webkit-backdrop-filter: blur(45px);
+        border-left: 1px solid var(--glass-border);
+        box-shadow: -15px 0 45px rgba(0, 0, 0, 0.5);
+        color: #fff;
+        padding: 24px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        transition: right 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        z-index: 1000;
+    }
+
+    .settings-panel.open {
+        right: 0;
+    }
+
+    .settings-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding-bottom: 14px;
+        flex-shrink: 0;
+    }
+
+    .settings-header h2 {
+        font-weight: 700;
+        font-size: 1.3rem;
+        letter-spacing: -0.5px;
+    }
+
+    .close-sidebar-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        color: var(--accent-color);
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .close-sidebar-btn:hover {
+        background: var(--accent-color);
+        color: #000;
+        transform: scale(1.05);
+    }
+
+    .settings-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        padding-right: 4px;
+    }
+
+    .settings-section {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        padding: 16px;
+        border-radius: 18px;
+    }
+
+    .section-title {
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: rgba(255, 255, 255, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 12px;
+    }
+
+    .setting-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .setting-row:last-child {
+        border-bottom: none;
+    }
+
+    /* Switch iOS Estilo */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 48px;
+        height: 28px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.16);
+        transition: .3s cubic-bezier(0.25, 1, 0.5, 1);
+        border-radius: 34px;
+    }
+
+    .slider::before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .3s cubic-bezier(0.25, 1, 0.5, 1);
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    input:checked + .slider {
+        background-color: #30d158; /* iOS Green */
+    }
+
+    input:checked + .slider::before {
+        transform: translateX(20px);
+    }
+
+    /* Creador de Alarmas */
+    .alarm-creator {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .time-inputs {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .time-input {
+        width: 60px;
+        height: 44px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        color: #fff;
+        text-align: center;
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+
+    .time-input:focus {
+        border-color: var(--accent-color);
+        outline: none;
+    }
+
+    .time-sep {
+        font-size: 1.5rem;
+        font-weight: 700;
+        opacity: 0.6;
+    }
+
+    .text-input {
+        height: 40px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        color: #fff;
+        padding: 0 12px;
+        font-size: 0.85rem;
+    }
+
+    .text-input:focus {
+        border-color: var(--accent-color);
+        outline: none;
+    }
+
+    .action-btn {
+        height: 40px;
+        background: var(--accent-color);
+        border: none;
+        border-radius: 10px;
+        color: #000;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s, background 0.2s;
+    }
+
+    .action-btn:hover {
+        background: #ffb03a;
+        transform: translateY(-1px);
+    }
+
+    .secondary-btn {
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .secondary-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Lista de Alarmas */
+    .alarms-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 160px;
+        overflow-y: auto;
+        padding-right: 2px;
+    }
+
+    .empty-list-text {
+        font-size: 0.8rem;
+        opacity: 0.4;
+        text-align: center;
+        margin: 10px 0;
+    }
+
+    :global(.alarm-item) {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.04);
+        padding: 8px 12px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+    }
+
+    :global(.alarm-info) {
+        display: flex;
+        flex-direction: column;
+    }
+
+    :global(.alarm-time) {
+        font-weight: 700;
+        font-size: 1.05rem;
+    }
+
+    :global(.alarm-lbl) {
+        font-size: 0.7rem;
+        opacity: 0.5;
+    }
+
+    :global(.alarm-actions) {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    :global(.delete-alarm-btn) {
+        background: transparent;
+        border: none;
+        color: #ff453a;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        border-radius: 50%;
+        transition: background 0.2s;
+    }
+
+    :global(.delete-alarm-btn:hover) {
+        background: rgba(255, 69, 58, 0.15);
+    }
+
+    /* Grilla de Temas */
+    .themes-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    :global(.theme-card) {
+        padding: 12px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        user-select: none;
+    }
+
+    :global(.theme-card:hover) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Creador de Temas */
+    .theme-creator {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .color-picker-row {
+        display: flex;
+        gap: 12px;
+    }
+
+    .color-picker-cell {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .color-picker-cell label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        opacity: 0.6;
+    }
+
+    .color-picker-cell input[type="color"] {
+        appearance: none;
+        -webkit-appearance: none;
+        border: none;
+        width: 100%;
+        height: 38px;
+        border-radius: 8px;
+        cursor: pointer;
+        background: none;
+    }
+
+    .color-picker-cell input[type="color"]::-webkit-color-swatch-wrapper {
+        padding: 0;
+    }
+
+    .color-picker-cell input[type="color"]::-webkit-color-swatch {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+    }
+
+    .range-slider {
+        width: 100px;
+        accent-color: var(--accent-color);
+        cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+        .settings-panel {
+            width: 100%;
+            right: -100%;
+            border-left: none;
+        }
+    }
+
+    /* Atajos de teclado */
+    .shortcuts-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .shortcut-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.75);
+        padding: 4px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .shortcut-item:last-child {
+        border-bottom: none;
+    }
+
+    .shortcut-item kbd {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #fff;
+        padding: 2px 6px;
+        border-radius: 5px;
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        font-weight: 700;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+</style>

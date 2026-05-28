@@ -1,0 +1,377 @@
+---
+---
+
+<!-- Botón de Hamburguesa Flotante Premium -->
+<button class="hamburger-trigger" id="hamburger-btn" aria-label="Abrir menú" aria-expanded="false">
+    <div class="hamburger-box">
+        <div class="hamburger-inner"></div>
+    </div>
+</button>
+
+<!-- Menú Lateral Colapsable (Sidebar Drawer) -->
+<nav class="sidebar-container" id="app-sidebar" aria-label="Menú principal lateral">
+    <div class="sidebar-brand">
+        <svg xmlns="http://www.w3.org/2000/svg" class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        <span class="brand-text">Flip Clock <span class="badge">Pro</span></span>
+    </div>
+
+    <div class="sidebar-menu">
+        <!-- Reloj (Clock) -->
+        <button class="menu-item active" data-view="clock" title="Reloj (Atajo: 1 / C)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span>Reloj</span>
+            <kbd class="key-hint">1</kbd>
+        </button>
+
+        <!-- Cronómetro (Stopwatch) -->
+        <button class="menu-item" data-view="stopwatch" title="Cronómetro (Atajo: 2 / S)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="10" y1="2" x2="14" y2="2"></line>
+                <line x1="12" y1="14" x2="15" y2="11"></line>
+                <circle cx="12" cy="14" r="8"></circle>
+            </svg>
+            <span>Cronómetro</span>
+            <kbd class="key-hint">2</kbd>
+        </button>
+
+        <!-- Pomodoro -->
+        <button class="menu-item" data-view="pomodoro" title="Pomodoro (Atajo: 3 / P)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v4M4.22 5.78l2.83 2.83M19.78 5.78l-2.83 2.83"></path>
+                <path d="M12 6c-3.87 0-7 2.69-7 6a7.1 7.1 0 0 0 2.24 5.16c.3.26.43.68.32 1.07L7 21h10l-.56-2.77c-.1-.39.02-.81.32-1.07A7.1 7.1 0 0 0 19 12c0-3.31-3.13-6-7-6z"></path>
+            </svg>
+            <span>Pomodoro</span>
+            <kbd class="key-hint">3</kbd>
+        </button>
+
+        <!-- Temporizador (Timer) -->
+        <button class="menu-item" data-view="timer" title="Temporizador (Atajo: 4 / T)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                <path d="M2 12h20"></path>
+            </svg>
+            <span>Temporizador</span>
+            <kbd class="key-hint">4</kbd>
+        </button>
+    </div>
+
+    <div class="sidebar-footer">
+        <!-- Silenciar (Mute) -->
+        <button class="footer-btn" id="sidebar-mute-btn" title="Silenciar audio (Atajo: M)">
+            <svg xmlns="http://www.w3.org/2000/svg" class="vol-icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" class="vol-icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="display:none;">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <line x1="23" y1="9" x2="17" y2="15"></line>
+                <line x1="17" y1="9" x2="23" y2="15"></line>
+            </svg>
+            <span class="footer-btn-text">Sonido</span>
+        </button>
+
+        <!-- Ajustes (Settings) -->
+        <button class="footer-btn" id="sidebar-settings-btn" title="Abrir Ajustes (Atajo: .)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span class="footer-btn-text">Ajustes</span>
+        </button>
+    </div>
+</nav>
+
+<style>
+    /* Trigger de Hamburguesa Flotante */
+    .hamburger-trigger {
+        position: fixed;
+        top: 24px;
+        left: 24px;
+        z-index: 1100;
+        width: 44px;
+        height: 44px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 12px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), 
+                    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .hamburger-trigger:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: scale(1.05);
+    }
+
+    /* Animación del icono de hamburguesa a cruz */
+    .hamburger-box {
+        width: 22px;
+        height: 14px;
+        position: relative;
+    }
+
+    .hamburger-inner,
+    .hamburger-inner::before,
+    .hamburger-inner::after {
+        width: 22px;
+        height: 2px;
+        background-color: #fff;
+        position: absolute;
+        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), 
+                    background-color 0.3s ease;
+        border-radius: 4px;
+    }
+
+    .hamburger-inner {
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .hamburger-inner::before {
+        content: "";
+        top: -6px;
+    }
+
+    .hamburger-inner::after {
+        content: "";
+        bottom: -6px;
+    }
+
+    /* Estados abiertos */
+    .hamburger-trigger[aria-expanded="true"] .hamburger-inner {
+        transform: rotate(45deg);
+        background-color: var(--accent-color);
+    }
+
+    .hamburger-trigger[aria-expanded="true"] .hamburger-inner::before {
+        transform: rotate(90deg) translate(6px, 0);
+        top: 0;
+        background-color: var(--accent-color);
+    }
+
+    .hamburger-trigger[aria-expanded="true"] .hamburger-inner::after {
+        transform: rotate(90deg) translate(-6px, 0);
+        bottom: 0;
+        opacity: 0; /* Oculta la línea de abajo */
+    }
+
+    /* CONTENEDOR DE SIDEBAR LATERAL (DRAWER) */
+    .sidebar-container {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: -260px; /* Escondido por defecto */
+        width: 250px;
+        background: rgba(20, 20, 22, 0.7);
+        backdrop-filter: blur(40px);
+        -webkit-backdrop-filter: blur(40px);
+        border-right: 1px solid var(--glass-border);
+        box-shadow: 15px 0 45px rgba(0, 0, 0, 0.4);
+        padding: 92px 18px 24px 18px; /* Margen superior para el trigger */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        z-index: 1050;
+        transition: left 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .sidebar-container.open {
+        left: 0;
+    }
+
+    /* Marca / Logo */
+    .sidebar-brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        margin-bottom: 24px;
+    }
+
+    .logo-icon {
+        width: 24px;
+        height: 24px;
+        color: var(--accent-color);
+    }
+
+    .brand-text {
+        font-weight: 800;
+        font-size: 1.15rem;
+        letter-spacing: -0.5px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .brand-text .badge {
+        font-size: 0.65rem;
+        font-weight: 800;
+        background: var(--accent-color);
+        color: #000;
+        padding: 2px 6px;
+        border-radius: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Menú */
+    .sidebar-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex-grow: 1;
+    }
+
+    .menu-item {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+        padding: 12px 16px;
+        border: none;
+        background: transparent;
+        color: #fff;
+        cursor: pointer;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+        text-align: left;
+    }
+
+    .menu-item svg {
+        width: 20px;
+        height: 20px;
+        opacity: 0.6;
+        transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .menu-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .menu-item:hover svg {
+        opacity: 1;
+        color: var(--accent-color);
+        transform: scale(1.05);
+    }
+
+    .menu-item.active {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--accent-color);
+        box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .menu-item.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 25%;
+        height: 50%;
+        width: 3px;
+        background: var(--accent-color);
+        border-radius: 0 4px 4px 0;
+        box-shadow: 0 0 8px var(--accent-color);
+    }
+
+    .menu-item.active svg {
+        opacity: 1;
+        color: var(--accent-color);
+    }
+
+    /* Píldora de atajo visual */
+    .key-hint {
+        margin-left: auto;
+        font-size: 0.65rem;
+        font-family: var(--font-mono);
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.4);
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+    .menu-item:hover .key-hint {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Pie de Sidebar (Footer) */
+    .sidebar-footer {
+        display: flex;
+        gap: 8px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding-top: 20px;
+    }
+
+    .footer-btn {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 64px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        color: #fff;
+        cursor: pointer;
+        font-size: 0.72rem;
+        font-weight: 600;
+        transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .footer-btn svg {
+        width: 18px;
+        height: 18px;
+        opacity: 0.6;
+        transition: all 0.2s;
+    }
+
+    .footer-btn:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .footer-btn:hover svg {
+        opacity: 1;
+        color: var(--accent-color);
+    }
+
+    .footer-btn.active {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--accent-color);
+    }
+
+    .footer-btn.active svg {
+        opacity: 1;
+        color: var(--accent-color);
+    }
+
+    @media (max-width: 600px) {
+        .sidebar-container {
+            width: 100%;
+            left: -100%;
+            border-right: none;
+        }
+    }
+</style>
