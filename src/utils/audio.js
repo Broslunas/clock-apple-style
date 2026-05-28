@@ -24,7 +24,7 @@ export const setMute = (mute) => {
 
 export const getMute = () => isMuted;
 
-// Synthesize a realistic mechanical flip click
+// Synthesize a premium, ultra-subtle, organic tick (ideal for concentration)
 export const playFlipSound = () => {
     if (isMuted) return;
     initAudio();
@@ -33,9 +33,8 @@ export const playFlipSound = () => {
     try {
         const now = audioCtx.currentTime;
 
-        // 1. High frequency mechanical leaf strike (click/scrape)
-        // Create noise buffer
-        const bufferSize = audioCtx.sampleRate * 0.02; // 20ms of noise
+        // 1. Extremely soft paper brush (simulating a soft page turn / leaf strike)
+        const bufferSize = audioCtx.sampleRate * 0.015; // 15ms
         const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
@@ -47,47 +46,42 @@ export const playFlipSound = () => {
 
         const noiseFilter = audioCtx.createBiquadFilter();
         noiseFilter.type = 'bandpass';
-        noiseFilter.frequency.setValueAtTime(3200, now);
-        noiseFilter.Q.setValueAtTime(4, now);
+        noiseFilter.frequency.setValueAtTime(2500, now);
+        noiseFilter.Q.setValueAtTime(3, now);
 
         const noiseGain = audioCtx.createGain();
-        noiseGain.gain.setValueAtTime(0.08, now); // soft strike
-        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.015);
+        noiseGain.gain.setValueAtTime(0.006, now); // Extremely quiet brush
+        noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.01);
 
         noiseNode.connect(noiseFilter);
         noiseFilter.connect(noiseGain);
         noiseGain.connect(audioCtx.destination);
 
-        // 2. Low-mid mechanical thud/body vibration
-        const thudOsc = audioCtx.createOscillator();
-        thudOsc.type = 'triangle';
-        thudOsc.frequency.setValueAtTime(95, now);
-        thudOsc.frequency.exponentialRampToValueAtTime(40, now + 0.05);
+        // 2. Gentle, low-frequency warm sine bump (tactile feel without sharp transients)
+        const sineOsc = audioCtx.createOscillator();
+        sineOsc.type = 'sine';
+        sineOsc.frequency.setValueAtTime(140, now);
+        sineOsc.frequency.exponentialRampToValueAtTime(70, now + 0.025);
 
-        const thudFilter = audioCtx.createBiquadFilter();
-        thudFilter.type = 'lowpass';
-        thudFilter.frequency.setValueAtTime(200, now);
+        const sineGain = audioCtx.createGain();
+        sineGain.gain.setValueAtTime(0.03, now); // Warm, round tick bump
+        sineGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
 
-        const thudGain = audioCtx.createGain();
-        thudGain.gain.setValueAtTime(0.35, now); // thud strength
-        thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+        sineOsc.connect(sineGain);
+        sineGain.connect(audioCtx.destination);
 
-        thudOsc.connect(thudFilter);
-        thudFilter.connect(thudGain);
-        thudGain.connect(audioCtx.destination);
-
-        // Start both
+        // Start both nodes
         noiseNode.start(now);
-        noiseNode.stop(now + 0.02);
+        noiseNode.stop(now + 0.015);
 
-        thudOsc.start(now);
-        thudOsc.stop(now + 0.06);
+        sineOsc.start(now);
+        sineOsc.stop(now + 0.03);
     } catch (e) {
         console.warn("Failed to play flip sound:", e);
     }
 };
 
-// Play a premium harmonic bell/chime loop for alarms
+// Play a relaxing, meditative Zen Tibetan Singing Bowl loop for alarms
 export const startAlarmSound = () => {
     if (isMuted) return;
     initAudio();
@@ -100,33 +94,49 @@ export const startAlarmSound = () => {
         if (isMuted || !audioCtx) return;
         const now = audioCtx.currentTime;
 
-        // Frecuencias para un acorde Apple clásico (La mayor 9: A, C#, E, B)
-        const freqs = [440, 554.37, 659.25, 880];
+        // Zen Singing Bowl harmonics (fundamental + slightly detuned overtones for warm vibrato/beating)
+        const harmonics = [
+            { freq: 220, gainVal: 0.08, decay: 5.5, attack: 0.15 },      // Fundamental (A3)
+            { freq: 220.5, gainVal: 0.06, decay: 5.2, attack: 0.2 },     // Beating tone
+            { freq: 440, gainVal: 0.04, decay: 4.5, attack: 0.1 },      // Octave (A4)
+            { freq: 660, gainVal: 0.02, decay: 3.8, attack: 0.25 },     // Perfect fifth (E5)
+            { freq: 880, gainVal: 0.01, decay: 3.0, attack: 0.08 }      // Double octave (A5)
+        ];
         
-        freqs.forEach((freq, index) => {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, now + (index * 0.08)); // arpegiado
-            
-            gain.gain.setValueAtTime(0.0, now);
-            gain.gain.linearRampToValueAtTime(0.12, now + (index * 0.08) + 0.05); // ataque suave
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2); // desvanecimiento largo tipo campana
-
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            osc.start(now);
-            osc.stop(now + 1.5);
-            
-            alarmOscillators.push({ osc, gain });
+        harmonics.forEach(({ freq, gainVal, decay, attack }) => {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now);
+                
+                gain.gain.setValueAtTime(0.0, now);
+                gain.gain.linearRampToValueAtTime(gainVal, now + attack); // Smooth mallet-like attack
+                gain.gain.exponentialRampToValueAtTime(0.001, now + decay); // Soothing, long decay
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start(now);
+                osc.stop(now + decay + 0.1);
+                
+                const oscRef = { osc, gain };
+                alarmOscillators.push(oscRef);
+                
+                // Clean up oscillator references once stopped
+                setTimeout(() => {
+                    alarmOscillators = alarmOscillators.filter(item => item !== oscRef);
+                }, (decay + 0.5) * 1000);
+            } catch (e) {
+                console.warn("Error creating alarm node:", e);
+            }
         });
     };
 
-    // Play immediately and then repeat every 1.5s
+    // Play immediately and then repeat every 6 seconds (providing space for concentration)
     playChimeNode();
-    alarmInterval = setInterval(playChimeNode, 1500);
+    alarmInterval = setInterval(playChimeNode, 6000);
 };
 
 export const stopAlarmSound = () => {
