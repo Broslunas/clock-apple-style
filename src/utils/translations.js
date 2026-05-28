@@ -12,6 +12,12 @@ export const languages = {
         desc_pomodoro: "Temporizador Pomodoro premium con alertas relajantes, diseñado para estructurar tus bloques de estudio sin distracciones.",
         desc_timer: "Temporizador de cuenta regresiva con visualización flip y campana Zen meditativa, perfecto para controlar tus bloques de estudio.",
         desc_world_clock: "Consulta la hora en tiempo real de cualquier zona horaria del mundo sincronizada con TimeAPI, ideal para planificar tus sesiones internacionales de estudio.",
+        // keywords
+        kw_clock: "reloj flip online, reloj digital premium, reloj estilo apple, reloj con alarma, reloj web, hora actual, broslunas clock",
+        kw_stopwatch: "cronómetro online, cronómetro con vueltas, cronómetro digital, medir tiempo, stopwatch web",
+        kw_pomodoro: "pomodoro online, temporizador pomodoro, técnica pomodoro, estudio productivo, timer pomodoro gratis",
+        kw_timer: "temporizador online, cuenta regresiva, temporizador web, alarma countdown, timer digital",
+        kw_world_clock: "reloj mundial, hora en el mundo, zonas horarias, reloj zona horaria, hora internacional, timeapi",
         // Sidebar UI
         menu_clock: "Reloj",
         menu_world_clock: "Reloj Mundial",
@@ -107,6 +113,12 @@ export const languages = {
         desc_pomodoro: "Premium Pomodoro timer with relaxing alerts, designed to structure your study blocks without distractions.",
         desc_timer: "Countdown timer with flip display and meditative Zen chime, perfect for tracking your study sessions.",
         desc_world_clock: "Check the real-time of any timezone in the world synchronized with TimeAPI, ideal for planning your international study sessions.",
+        // keywords
+        kw_clock: "online flip clock, premium digital clock, apple style clock, clock with alarm, web clock, current time, broslunas clock",
+        kw_stopwatch: "online stopwatch, stopwatch with laps, digital stopwatch, time tracker, web stopwatch",
+        kw_pomodoro: "online pomodoro, pomodoro timer, pomodoro technique, productive study, free pomodoro timer",
+        kw_timer: "online timer, countdown timer, web timer, alarm countdown, digital timer",
+        kw_world_clock: "world clock, time in the world, time zones, timezone clock, international time, timeapi",
         // Sidebar UI
         menu_clock: "Clock",
         menu_world_clock: "World Clock",
