@@ -198,7 +198,7 @@ import SettingsPanel from '../components/SettingsPanel.astro';
 		<SettingsPanel />
 
 		<!-- TOAST NOTIFICACIÓN -->
-		<div class="toast-tip" id="toast-tip">Presiona [ . ] para ajustes | F11 Pantalla Completa</div>
+		<div class="toast-tip" id="toast-tip">Presiona [ . ] para ajustes | [ F ] Pantalla Completa</div>
 	</main>
 
 	<!-- ==============================================
@@ -1813,6 +1813,21 @@ import SettingsPanel from '../components/SettingsPanel.astro';
 		if (key === '.') {
 			e.preventDefault();
 			toggleSettings();
+			return;
+		}
+
+		// Pantalla Completa (F)
+		if (key === 'f') {
+			e.preventDefault();
+			if (!document.fullscreenElement) {
+				document.documentElement.requestFullscreen().catch(err => {
+					console.warn("No se pudo iniciar pantalla completa:", err);
+				});
+			} else {
+				if (document.exitFullscreen) {
+					document.exitFullscreen();
+				}
+			}
 			return;
 		}
 
