@@ -51,6 +51,13 @@ window.broslunasState = window.broslunasState || {
         timeLeft: 1800,
         interval: null
     },
+    worldClock: {
+        selectedTimezone: 'Europe/London',
+        offsetMs: 0,
+        isLoading: false,
+        errorMessage: '',
+        availableTimezones: []
+    },
     loopsInitialized: false
 };
 
@@ -107,6 +114,11 @@ function loadSavedState() {
             state.customTheme = parsed.customTheme ?? null;
             state.alarms = parsed.alarms ?? [];
             
+            if (parsed.worldClock) {
+                state.worldClock.selectedTimezone = parsed.worldClock.selectedTimezone ?? 'Europe/London';
+                state.worldClock.offsetMs = parsed.worldClock.offsetMs ?? 0;
+            }
+            
             setMute(state.isMuted);
         }
     } catch (e) {
@@ -123,7 +135,11 @@ function saveState() {
             isMechSounds: state.isMechSounds,
             activeThemeIndex: state.activeThemeIndex,
             customTheme: state.customTheme,
-            alarms: state.alarms
+            alarms: state.alarms,
+            worldClock: {
+                selectedTimezone: state.worldClock.selectedTimezone,
+                offsetMs: state.worldClock.offsetMs
+            }
         };
         localStorage.setItem('apple_flip_clock_state', JSON.stringify(toSave));
     } catch (e) {
@@ -363,6 +379,176 @@ function updateClock() {
     }
 }
 
+// --- VISTA 5: CONTROLADOR RELOJ MUNDIAL ---
+const majorTimezones = [
+    "Africa/Cairo",
+    "Africa/Johannesburg",
+    "Africa/Lagos",
+    "Africa/Nairobi",
+    "America/Argentina/Buenos_Aires",
+    "America/Bogota",
+    "America/Caracas",
+    "America/Chicago",
+    "America/Denver",
+    "America/Los_Angeles",
+    "America/Mexico_City",
+    "America/New_York",
+    "America/Santiago",
+    "America/Sao_Paulo",
+    "Asia/Bangkok",
+    "Asia/Dubai",
+    "Asia/Hong_Kong",
+    "Asia/Jakarta",
+    "Asia/Jerusalem",
+    "Asia/Kolkata",
+    "Asia/Manila",
+    "Asia/Riyadh",
+    "Asia/Seoul",
+    "Asia/Shanghai",
+    "Asia/Singapore",
+    "Asia/Tokyo",
+    "Atlantic/Azores",
+    "Australia/Adelaide",
+    "Australia/Brisbane",
+    "Australia/Melbourne",
+    "Australia/Perth",
+    "Australia/Sydney",
+    "Europe/Amsterdam",
+    "Europe/Athens",
+    "Europe/Berlin",
+    "Europe/Brussels",
+    "Europe/Budapest",
+    "Europe/Dublin",
+    "Europe/Istanbul",
+    "Europe/Lisbon",
+    "Europe/London",
+    "Europe/Madrid",
+    "Europe/Moscow",
+    "Europe/Paris",
+    "Europe/Rome",
+    "Europe/Vienna",
+    "Europe/Warsaw",
+    "Europe/Zurich",
+    "Pacific/Auckland",
+    "Pacific/Honolulu"
+];
+
+async function fetchTimezoneTime(timezone) {
+    state.worldClock.selectedTimezone = timezone;
+    state.worldClock.isLoading = true;
+    state.worldClock.errorMessage = '';
+    
+    const loader = document.getElementById('timezone-loader');
+    if (loader) loader.style.display = 'block';
+    
+    const refreshBtn = document.getElementById('timezone-refresh');
+    if (refreshBtn) refreshBtn.disabled = true;
+
+    try {
+        const response = await fetch(`https://timeapi.io/api/Time/current/zone?timeZone=${encodeURIComponent(timezone)}`);
+        if (!response.ok) {
+            throw new Error(`Error de red: ${response.status}`);
+        }
+        const data = await response.json();
+        
+        const year = data.year;
+        const month = data.month;
+        const day = data.day;
+        const hour = data.hour;
+        const minute = data.minute;
+        const seconds = data.seconds;
+        const milliSeconds = data.milliSeconds || 0;
+
+        const apiLocalRepresentation = new Date(year, month - 1, day, hour, minute, seconds, milliSeconds);
+        state.worldClock.offsetMs = apiLocalRepresentation.getTime() - Date.now();
+        
+        saveState();
+
+        const titleEl = document.getElementById('timezone-title');
+        if (titleEl) {
+            titleEl.textContent = timezone.replace(/_/g, ' ');
+        }
+    } catch (e) {
+        console.warn("Failed to fetch timezone time from API:", e);
+        state.worldClock.errorMessage = 'No se pudo sincronizar la hora. Usando hora local aproximada.';
+        
+        try {
+            const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: timezone,
+                year: 'numeric', month: 'numeric', day: 'numeric',
+                hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: false
+            });
+            const parts = formatter.formatToParts(new Date());
+            const partMap = {};
+            parts.forEach(p => partMap[p.type] = p.value);
+            
+            const apiLocalRepresentation = new Date(
+                parseInt(partMap.year),
+                parseInt(partMap.month) - 1,
+                parseInt(partMap.day),
+                parseInt(partMap.hour),
+                parseInt(partMap.minute),
+                parseInt(partMap.second)
+            );
+            state.worldClock.offsetMs = apiLocalRepresentation.getTime() - Date.now();
+        } catch (err) {
+            state.worldClock.offsetMs = 0;
+        }
+    } finally {
+        state.worldClock.isLoading = false;
+        if (loader) loader.style.display = 'none';
+        if (refreshBtn) refreshBtn.disabled = false;
+        updateWorldClockDisplay();
+    }
+}
+
+function updateWorldClockDisplay() {
+    if (state.activeView !== 'world-clock') return;
+
+    const now = new Date(Date.now() + state.worldClock.offsetMs);
+    
+    const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
+    const dateEl = document.getElementById('world-clock-date');
+    if (dateEl) {
+        dateEl.textContent = now.toLocaleDateString('es-ES', dateOptions).toUpperCase();
+    }
+
+    let hours = now.getHours();
+    let ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    if (!state.format24h) {
+        hours = hours % 12 || 12;
+    }
+
+    const hStr = String(hours).padStart(2, '0');
+    const mStr = String(now.getMinutes()).padStart(2, '0');
+    const sStr = String(now.getSeconds()).padStart(2, '0');
+
+    updateCardIfNeeded('wc-h1', hStr[0]);
+    updateCardIfNeeded('wc-h2', hStr[1]);
+    updateCardIfNeeded('wc-m1', mStr[0]);
+    updateCardIfNeeded('wc-m2', mStr[1]);
+
+    const sGroup = document.getElementById('world-clock-s-group');
+    const sColon = document.getElementById('world-clock-s-colon');
+
+    if (state.showSeconds) {
+        if (sGroup) sGroup.style.display = 'flex';
+        if (sColon) sColon.style.display = 'block';
+        updateCardIfNeeded('wc-s1', sStr[0]);
+        updateCardIfNeeded('wc-s2', sStr[1]);
+    } else {
+        if (sGroup) sGroup.style.display = 'none';
+        if (sColon) sColon.style.display = 'none';
+    }
+
+    const ampmEl = document.getElementById('world-clock-ampm');
+    if (ampmEl) {
+        ampmEl.textContent = ampm;
+        ampmEl.style.display = state.format24h ? 'none' : 'block';
+    }
+}
+
 // --- VISTA 2: CONTROLADOR CRONÓMETRO ---
 function drawStopwatch() {
     const time = state.stopwatch.elapsedTime;
@@ -590,6 +776,7 @@ if (!state.loopsInitialized) {
     // Background Loops
     setInterval(() => {
         updateClock();
+        updateWorldClockDisplay();
         checkAlarms();
     }, 200);
 
@@ -670,6 +857,11 @@ if (!state.loopsInitialized) {
             navigate('/timer');
             return;
         }
+        if (key === '5' || key === 'w') {
+            e.preventDefault();
+            navigate('/world-clock');
+            return;
+        }
 
         // Play/Pause Action (Space)
         if (e.key === ' ') {
@@ -746,6 +938,8 @@ document.addEventListener('astro:page-load', () => {
     const path = window.location.pathname;
     if (path === '/' || path.endsWith('/index.html')) {
         state.activeView = 'clock';
+    } else if (path.includes('/world-clock')) {
+        state.activeView = 'world-clock';
     } else if (path.includes('/stopwatch')) {
         state.activeView = 'stopwatch';
     } else if (path.includes('/pomodoro')) {
@@ -785,6 +979,7 @@ document.addEventListener('astro:page-load', () => {
             state.format24h = e.target.checked;
             saveState();
             updateClock();
+            updateWorldClockDisplay();
         };
     }
 
@@ -795,6 +990,7 @@ document.addEventListener('astro:page-load', () => {
             state.showSeconds = e.target.checked;
             saveState();
             updateClock();
+            updateWorldClockDisplay();
         };
     }
 
@@ -1196,6 +1392,87 @@ document.addEventListener('astro:page-load', () => {
         });
 
         drawTimer();
+    } else if (state.activeView === 'world-clock') {
+        const searchInput = document.getElementById('timezone-search');
+        const dropdown = document.getElementById('timezone-dropdown');
+        const refreshBtn = document.getElementById('timezone-refresh');
+        const titleEl = document.getElementById('timezone-title');
+
+        if (titleEl) {
+            titleEl.textContent = state.worldClock.selectedTimezone.replace(/_/g, ' ');
+        }
+
+        // Initialize timezone lists
+        if (state.worldClock.availableTimezones.length === 0) {
+            fetch('https://timeapi.io/api/TimeZone/AvailableTimeZones')
+                .then(r => r.json())
+                .then(list => {
+                    if (Array.isArray(list) && list.length > 0) {
+                        state.worldClock.availableTimezones = list;
+                    } else {
+                        state.worldClock.availableTimezones = majorTimezones;
+                    }
+                })
+                .catch(() => {
+                    state.worldClock.availableTimezones = majorTimezones;
+                });
+        }
+
+        const renderDropdown = (filterText) => {
+            if (!dropdown) return;
+            dropdown.innerHTML = '';
+            
+            const query = filterText.toLowerCase().trim();
+            if (!query) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            const listToUse = state.worldClock.availableTimezones.length > 0 
+                ? state.worldClock.availableTimezones 
+                : majorTimezones;
+
+            const filtered = listToUse.filter(tz => tz.toLowerCase().includes(query)).slice(0, 10);
+            
+            if (filtered.length === 0) {
+                dropdown.innerHTML = '<div class="timezone-item" style="pointer-events:none; opacity:0.5;">No hay resultados</div>';
+            } else {
+                filtered.forEach(tz => {
+                    const item = document.createElement('div');
+                    item.className = 'timezone-item';
+                    item.textContent = tz.replace(/_/g, ' ');
+                    item.onclick = () => {
+                        if (searchInput) searchInput.value = '';
+                        dropdown.style.display = 'none';
+                        fetchTimezoneTime(tz);
+                    };
+                    dropdown.appendChild(item);
+                });
+            }
+            dropdown.style.display = 'flex';
+        };
+
+        if (searchInput) {
+            searchInput.oninput = (e) => {
+                renderDropdown(e.target.value);
+            };
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (dropdown && !dropdown.contains(e.target) && e.target !== searchInput) {
+                    dropdown.style.display = 'none';
+                }
+            });
+        }
+
+        if (refreshBtn) {
+            refreshBtn.onclick = () => {
+                fetchTimezoneTime(state.worldClock.selectedTimezone);
+            };
+        }
+
+        // Fetch initial time or refresh
+        fetchTimezoneTime(state.worldClock.selectedTimezone);
     }
 
     // Fade out keyboard hints toast

@@ -1,0 +1,111 @@
+---
+import Layout from '../layouts/Layout.astro';
+import FlipCard from '../components/FlipCard.astro';
+import Sidebar from '../components/Sidebar.astro';
+import SettingsPanel from '../components/SettingsPanel.astro';
+---
+
+<Layout 
+	title="Reloj Mundial - Broslunas Clock" 
+	description="Consulta la hora en tiempo real de cualquier zona horaria del mundo sincronizada con TimeAPI, ideal para planificar tus sesiones internacionales de estudio."
+>
+	<!-- CONTENEDOR PRINCIPAL -->
+	<main class="app-container" id="app-canvas">
+		<header class="app-header">
+			<h1 class="brand-title">Broslunas Clock</h1>
+			<!-- Indicador rápido de sonido / alarma activa -->
+			<div class="status-indicator">
+				<span id="active-alarms-badge" class="alarm-badge-status" style="display:none;">⏰ Alarmas Activas</span>
+			</div>
+		</header>
+
+		<!-- CONTENEDOR DE PERSPECTIVA 3D -->
+		<div class="parallax-wrapper" id="parallax-target" transition:animate="fade">
+			<!-- ==============================================
+			     VISTA 5: RELOJ MUNDIAL 
+			     ============================================== -->
+			<section class="view-panel active" id="view-world-clock">
+				<div class="date-display" id="world-clock-date">Cargando fecha...</div>
+				
+				<div class="flip-clock-row">
+					<div class="flip-group">
+						<FlipCard id="wc-h1" transitionName="card-h1" />
+						<FlipCard id="wc-h2" transitionName="card-h2" />
+					</div>
+					
+					<div class="colon">:</div>
+
+					<div class="flip-group">
+						<FlipCard id="wc-m1" transitionName="card-m1" />
+						<FlipCard id="wc-m2" transitionName="card-m2" />
+					</div>
+
+					<div class="colon s-colon" id="world-clock-s-colon" style="display:none;">:</div>
+
+					<div class="flip-group s-group" id="world-clock-s-group" style="display:none;">
+						<FlipCard id="wc-s1" transitionName="card-s1" />
+						<FlipCard id="wc-s2" transitionName="card-s2" />
+					</div>
+				</div>
+
+				<div class="ampm-badge" id="world-clock-ampm">AM</div>
+
+				<!-- Buscador y Selector de Zona Horaria -->
+				<div class="timezone-selector-container">
+					<div class="timezone-header-info">
+						<span class="timezone-label">Zona Horaria:</span>
+						<h3 id="timezone-title" class="timezone-active-name">Cargando...</h3>
+						<button id="timezone-refresh" class="timezone-refresh-btn" title="Sincronizar con TimeAPI">
+							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M23 4v6h-6M1 20v-6h6"></path>
+								<path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+							</svg>
+						</button>
+					</div>
+					
+					<div class="timezone-search-box">
+						<input type="text" id="timezone-search" class="timezone-search-input" placeholder="Buscar zona o ciudad (ej. Tokyo, Madrid, London)..." autocomplete="off" />
+						<div id="timezone-dropdown" class="timezone-dropdown-list" style="display:none;">
+							<!-- Resultados inyectados por JS -->
+						</div>
+					</div>
+					
+					<div id="timezone-loader" class="timezone-sync-loader" style="display:none;">
+						<span class="spinner"></span> Sincronizando con TimeAPI...
+					</div>
+				</div>
+			</section>
+		</div>
+
+		<!-- MENU LATERAL -->
+		<Sidebar />
+
+		<!-- PANEL DE AJUSTES -->
+		<SettingsPanel />
+
+		<!-- TOAST INICIAL DE ATAJOS -->
+		<div class="toast-tip" id="toast-tip">
+			💡 Pulsa <kbd>H</kbd> para abrir el menú lateral y ver atajos
+		</div>
+
+		<!-- OVERLAY DE ALARMA DISPARADA -->
+		<div class="alarm-triggered-overlay" id="alarm-triggered-overlay" style="display:none;">
+			<div class="alarm-triggered-box">
+				<div class="alarm-bell-icon">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+						<path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+					</svg>
+				</div>
+				<h2 id="triggered-alarm-label">Alarma</h2>
+				<p id="triggered-alarm-time">00:00</p>
+				<div class="overlay-controls">
+					<button class="overlay-btn snooze" id="btn-alarm-snooze">Posponer (5 min)</button>
+					<button class="overlay-btn dismiss" id="btn-alarm-dismiss">Descartar</button>
+				</div>
+			</div>
+		</div>
+	</main>
+</Layout>
+
+<script src="../utils/app.js"></script>
