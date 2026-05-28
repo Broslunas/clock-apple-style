@@ -966,6 +966,30 @@ function drawTimer() {
     updateCardIfNeeded('tm-s1', String(seconds).padStart(2, '0')[0]);
     updateCardIfNeeded('tm-s2', String(seconds).padStart(2, '0')[1]);
 
+    // Ocultar cifras innecesarias
+    const hoursGroup = document.getElementById('tm-hours-group');
+    const colonH = document.getElementById('tm-colon-h');
+    const minutesGroup = document.getElementById('tm-minutes-group');
+    const colonM = document.getElementById('tm-colon-m');
+
+    if (hours > 0) {
+        if (hoursGroup) hoursGroup.style.display = 'flex';
+        if (colonH) colonH.style.display = 'block';
+        if (minutesGroup) minutesGroup.style.display = 'flex';
+        if (colonM) colonM.style.display = 'block';
+    } else {
+        if (hoursGroup) hoursGroup.style.display = 'none';
+        if (colonH) colonH.style.display = 'none';
+
+        if (minutes > 0) {
+            if (minutesGroup) minutesGroup.style.display = 'flex';
+            if (colonM) colonM.style.display = 'block';
+        } else {
+            if (minutesGroup) minutesGroup.style.display = 'none';
+            if (colonM) colonM.style.display = 'none';
+        }
+    }
+
     const pct = state.timer.timeLeft / state.timer.duration;
     const bar = document.getElementById('timer-progress-bar');
     if (bar) {
