@@ -1,0 +1,72 @@
+{
+  "name": "Broslunas Clock",
+  "short_name": "Clock",
+  "description": "Premium flip clock suite: Clock, Stopwatch, Pomodoro, Timer & World Clock",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f10",
+  "theme_color": "#1c1c1e",
+  "orientation": "any",
+  "lang": "es",
+  "dir": "ltr",
+  "scope": "/",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Stopwatch",
+      "short_name": "Stopwatch",
+      "description": "Open the Stopwatch",
+      "url": "/stopwatch",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Pomodoro",
+      "short_name": "Pomodoro",
+      "description": "Open the Pomodoro Timer",
+      "url": "/pomodoro",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Timer",
+      "short_name": "Timer",
+      "description": "Open the Countdown Timer",
+      "url": "/timer",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "World Clock",
+      "short_name": "World",
+      "description": "Open the World Clock",
+      "url": "/world-clock",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "label": "Broslunas Clock - Main View"
+    }
+  ]
+}
