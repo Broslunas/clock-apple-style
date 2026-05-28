@@ -3,19 +3,23 @@ import Layout from '../layouts/Layout.astro';
 import FlipCard from '../components/FlipCard.astro';
 import Sidebar from '../components/Sidebar.astro';
 import SettingsPanel from '../components/SettingsPanel.astro';
+import { languages } from '../utils/translations.js';
+
+const locale = Astro.currentLocale || 'es';
+const t = languages[locale];
 ---
 
 <Layout 
-	title="Cronómetro - Broslunas Clock" 
-	description="Cronómetro de alta precisión con registro de vueltas, diseñado con estética premium para tus sesiones de estudio y trabajo."
+	title={t.title_stopwatch} 
+	description={t.desc_stopwatch}
 >
 	<!-- CONTENEDOR PRINCIPAL -->
 	<main class="app-container" id="app-canvas">
 		<header class="app-header">
-			<h1 class="brand-title">Broslunas Clock</h1>
+			<h1 class="brand-title">{t.title_clock}</h1>
 			<!-- Indicador rápido de sonido / alarma activa -->
 			<div class="status-indicator">
-				<span id="active-alarms-badge" class="alarm-badge-status" style="display:none;">⏰ Alarmas Activas</span>
+				<span id="active-alarms-badge" class="alarm-badge-status" style="display:none;">{t.active_alarms}</span>
 			</div>
 		</header>
 
@@ -25,33 +29,33 @@ import SettingsPanel from '../components/SettingsPanel.astro';
 			     VISTA 2: CRONÓMETRO 
 			     ============================================== -->
 			<section class="view-panel active" id="view-stopwatch">
-				<h2 class="view-title">Cronómetro</h2>
+				<h2 class="view-title">{t.sw_title}</h2>
 				
 				<div class="flip-clock-row">
 					<div class="flip-group">
-						<FlipCard id="sw-m1" label="Min" transitionName="card-m1" />
+						<FlipCard id="sw-m1" label={t.sw_label_min} transitionName="card-m1" />
 						<FlipCard id="sw-m2" transitionName="card-m2" />
 					</div>
 					
 					<div class="colon">:</div>
 
 					<div class="flip-group">
-						<FlipCard id="sw-s1" label="Seg" transitionName="card-s1" />
+						<FlipCard id="sw-s1" label={t.sw_label_sec} transitionName="card-s1" />
 						<FlipCard id="sw-s2" transitionName="card-s2" />
 					</div>
 
 					<div class="colon">:</div>
 
 					<div class="flip-group ms-group">
-						<FlipCard id="sw-ms1" label="Cen" />
+						<FlipCard id="sw-ms1" label={t.sw_label_cen} />
 						<FlipCard id="sw-ms2" />
 					</div>
 				</div>
 
 				<div class="controls-row">
-					<button id="sw-lap-btn" class="control-btn border-btn" disabled>Vuelta</button>
-					<button id="sw-start-btn" class="control-btn play-btn">Iniciar</button>
-					<button id="sw-reset-btn" class="control-btn border-btn" disabled>Reiniciar</button>
+					<button id="sw-lap-btn" class="control-btn border-btn" disabled>{t.sw_btn_lap}</button>
+					<button id="sw-start-btn" class="control-btn play-btn">{t.sw_btn_start}</button>
+					<button id="sw-reset-btn" class="control-btn border-btn" disabled>{t.sw_btn_reset}</button>
 				</div>
 
 				<!-- Tabla de vueltas -->
@@ -59,9 +63,9 @@ import SettingsPanel from '../components/SettingsPanel.astro';
 					<table class="laps-table">
 						<thead>
 							<tr>
-								<th>Nº</th>
-								<th>Tiempo</th>
-								<th>Total</th>
+								<th>{t.sw_table_num}</th>
+								<th>{t.sw_table_lap}</th>
+								<th>{t.sw_table_total}</th>
 							</tr>
 						</thead>
 						<tbody id="laps-list">
@@ -79,9 +83,7 @@ import SettingsPanel from '../components/SettingsPanel.astro';
 		<SettingsPanel />
 
 		<!-- TOAST INICIAL DE ATAJOS -->
-		<div class="toast-tip" id="toast-tip">
-			💡 Pulsa <kbd>H</kbd> para abrir el menú lateral y ver atajos
-		</div>
+		<div class="toast-tip" id="toast-tip" set:html={t.toast_hint_html}></div>
 
 		<!-- OVERLAY DE ALARMA DISPARADA -->
 		<div class="alarm-triggered-overlay" id="alarm-triggered-overlay" style="display:none;">
@@ -92,11 +94,11 @@ import SettingsPanel from '../components/SettingsPanel.astro';
 						<path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
 					</svg>
 				</div>
-				<h2 id="triggered-alarm-label">Alarma</h2>
+				<h2 id="triggered-alarm-label">{t.alarm_triggered_label_default}</h2>
 				<p id="triggered-alarm-time">00:00</p>
 				<div class="overlay-controls">
-					<button class="overlay-btn snooze" id="btn-alarm-snooze">Posponer (5 min)</button>
-					<button class="overlay-btn dismiss" id="btn-alarm-dismiss">Descartar</button>
+					<button class="overlay-btn snooze" id="btn-alarm-snooze">{t.alarm_btn_snooze}</button>
+					<button class="overlay-btn dismiss" id="btn-alarm-dismiss">{t.alarm_btn_dismiss}</button>
 				</div>
 			</div>
 		</div>

@@ -1,4 +1,8 @@
 ---
+import { languages } from '../utils/translations.js';
+const locale = Astro.currentLocale || 'es';
+const t = languages[locale];
+const prefix = locale === 'en' ? '/en' : '';
 ---
 
 <!-- Botón de Hamburguesa Flotante Premium -->
@@ -17,67 +21,68 @@
             <circle cx="12" cy="12" r="10"></circle>
             <polyline points="12 6 12 12 16 14"></polyline>
         </svg>
-        <span class="brand-text">Broslunas Clock <span class="badge">Pro</span></span>
+        <span class="brand-text">Broslunas Clock</span>
     </div>
 
     <div class="sidebar-menu">
         <!-- Reloj (Clock) -->
-        <a href="/" class="menu-item active" data-view="clock" title="Reloj (Atajo: 1 / C)">
+        <a href={`${prefix}/`} class="menu-item active" data-view="clock" title={`${t.menu_clock} (Atajo: 1 / C)`}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
-            <span>Reloj</span>
+            <span>{t.menu_clock}</span>
             <kbd class="key-hint">1</kbd>
         </a>
 
-        <!-- Reloj Mundial (World Clock) -->
-        <a href="/world-clock" class="menu-item" data-view="world-clock" title="Reloj Mundial (Atajo: 5 / W)">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
-                <path d="M2 12h20"></path>
-            </svg>
-            <span>Reloj Mundial</span>
-            <kbd class="key-hint">5</kbd>
-        </a>
-
         <!-- Cronómetro (Stopwatch) -->
-        <a href="/stopwatch" class="menu-item" data-view="stopwatch" title="Cronómetro (Atajo: 2 / S)">
+        <a href={`${prefix}/stopwatch`} class="menu-item" data-view="stopwatch" title={`${t.menu_stopwatch} (Atajo: 2 / S)`}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="10" y1="2" x2="14" y2="2"></line>
                 <line x1="12" y1="14" x2="15" y2="11"></line>
                 <circle cx="12" cy="14" r="8"></circle>
             </svg>
-            <span>Cronómetro</span>
+            <span>{t.menu_stopwatch}</span>
             <kbd class="key-hint">2</kbd>
         </a>
 
         <!-- Pomodoro -->
-        <a href="/pomodoro" class="menu-item" data-view="pomodoro" title="Pomodoro (Atajo: 3 / P)">
+        <a href={`${prefix}/pomodoro`} class="menu-item" data-view="pomodoro" title={`${t.menu_pomodoro} (Atajo: 3 / P)`}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 2v4M4.22 5.78l2.83 2.83M19.78 5.78l-2.83 2.83"></path>
                 <path d="M12 6c-3.87 0-7 2.69-7 6a7.1 7.1 0 0 0 2.24 5.16c.3.26.43.68.32 1.07L7 21h10l-.56-2.77c-.1-.39.02-.81.32-1.07A7.1 7.1 0 0 0 19 12c0-3.31-3.13-6-7-6z"></path>
             </svg>
-            <span>Pomodoro</span>
+            <span>{t.menu_pomodoro}</span>
             <kbd class="key-hint">3</kbd>
         </a>
 
         <!-- Temporizador (Timer) -->
-        <a href="/timer" class="menu-item" data-view="timer" title="Temporizador (Atajo: 4 / T)">
+        <a href={`${prefix}/timer`} class="menu-item" data-view="timer" title={`${t.menu_timer} (Atajo: 4 / T)`}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
                 <path d="M2 12h20"></path>
             </svg>
-            <span>Temporizador</span>
+            <span>{t.menu_timer}</span>
             <kbd class="key-hint">4</kbd>
         </a>
+        
+        <!-- Reloj Mundial (World Clock) -->
+        <a href={`${prefix}/world-clock`} class="menu-item" data-view="world-clock" title={`${t.menu_world_clock} (Atajo: 5 / W)`}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+                <path d="M2 12h20"></path>
+            </svg>
+            <span>{t.menu_world_clock}</span>
+            <kbd class="key-hint">5</kbd>
+        </a>
+
     </div>
 
     <div class="sidebar-footer">
         <!-- Silenciar (Mute) -->
-        <button class="footer-btn" id="sidebar-mute-btn" title="Silenciar audio (Atajo: M)">
+        <button class="footer-btn" id="sidebar-mute-btn" title={`${t.menu_sound} (Atajo: M)`}>
             <svg xmlns="http://www.w3.org/2000/svg" class="vol-icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -87,16 +92,16 @@
                 <line x1="23" y1="9" x2="17" y2="15"></line>
                 <line x1="17" y1="9" x2="23" y2="15"></line>
             </svg>
-            <span class="footer-btn-text">Sonido</span>
+            <span class="footer-btn-text">{t.menu_sound}</span>
         </button>
 
         <!-- Ajustes (Settings) -->
-        <button class="footer-btn" id="sidebar-settings-btn" title="Abrir Ajustes (Atajo: .)">
+        <button class="footer-btn" id="sidebar-settings-btn" title={`${t.menu_settings} (Atajo: .)`}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                 <circle cx="12" cy="12" r="3"></circle>
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
-            <span class="footer-btn-text">Ajustes</span>
+            <span class="footer-btn-text">{t.menu_settings}</span>
         </button>
     </div>
 </nav>

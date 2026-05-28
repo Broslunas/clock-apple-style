@@ -1,0 +1,83 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { languages } from '../utils/translations.js';
+---
+
+<Layout title="Broslunas Clock" description="404 - Page Not Found">
+	<main class="app-container flex flex-col items-center justify-center min-h-screen p-6 text-center select-none">
+		<div class="max-w-md w-full bg-white/4 border border-white/8 backdrop-blur-2xl rounded-3xl p-8 shadow-[0_30px_60px_rgba(0,0,0,0.6)] flex flex-col items-center gap-6 transition-all hover:scale-[1.02]">
+			
+			<!-- Clock Icon with pulse & wobble -->
+			<div class="w-20 h-20 bg-accent/15 rounded-full flex items-center justify-center text-accent animate-pulse">
+				<svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+					<path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+				</svg>
+			</div>
+
+			<!-- 404 Flip Clock Row -->
+			<div class="flex gap-4 justify-center items-center my-4">
+				<!-- Card 4 -->
+				<div class="relative w-[70px] h-[95px] rounded-lg shadow-2xl bg-zinc-900 overflow-hidden border border-white/5">
+					<div class="absolute inset-0 bg-gradient-to-b from-white/8 to-transparent pointer-events-none z-10"></div>
+					<div class="absolute top-0 left-0 w-full h-[50%] bg-zinc-800 border-b border-black flex items-center justify-center overflow-hidden">
+						<span class="text-white text-5xl font-extrabold translate-y-[24px]">4</span>
+					</div>
+					<div class="absolute bottom-0 left-0 w-full h-[50%] bg-zinc-900 flex items-center justify-center overflow-hidden">
+						<span class="text-white text-5xl font-extrabold -translate-y-[24px]">4</span>
+					</div>
+				</div>
+
+				<!-- Card 0 -->
+				<div class="relative w-[70px] h-[95px] rounded-lg shadow-2xl bg-zinc-900 overflow-hidden border border-white/5">
+					<div class="absolute inset-0 bg-gradient-to-b from-white/8 to-transparent pointer-events-none z-10"></div>
+					<div class="absolute top-0 left-0 w-full h-[50%] bg-zinc-800 border-b border-black flex items-center justify-center overflow-hidden">
+						<span class="text-white text-5xl font-extrabold translate-y-[24px]">0</span>
+					</div>
+					<div class="absolute bottom-0 left-0 w-full h-[50%] bg-zinc-900 flex items-center justify-center overflow-hidden">
+						<span class="text-white text-5xl font-extrabold -translate-y-[24px]">0</span>
+					</div>
+				</div>
+
+				<!-- Card 4 -->
+				<div class="relative w-[70px] h-[95px] rounded-lg shadow-2xl bg-zinc-900 overflow-hidden border border-white/5">
+					<div class="absolute inset-0 bg-gradient-to-b from-white/8 to-transparent pointer-events-none z-10"></div>
+					<div class="absolute top-0 left-0 w-full h-[50%] bg-zinc-800 border-b border-black flex items-center justify-center overflow-hidden">
+						<span class="text-white text-5xl font-extrabold translate-y-[24px]">4</span>
+					</div>
+					<div class="absolute bottom-0 left-0 w-full h-[50%] bg-zinc-900 flex items-center justify-center overflow-hidden">
+						<span class="text-white text-5xl font-extrabold -translate-y-[24px]">4</span>
+					</div>
+				</div>
+			</div>
+
+			<h2 id="title-404" class="text-2xl font-extrabold mt-2 text-white">404</h2>
+			<p id="desc-404" class="text-white/60 text-sm leading-relaxed px-4">Oops! Page not found.</p>
+
+			<a href="/" id="back-home-btn" class="h-11 px-8 rounded-full bg-white text-black font-bold text-sm hover:bg-accent transition-all duration-300 flex items-center justify-center shadow-lg mt-2 cursor-pointer">
+				Go Back Home
+			</a>
+		</div>
+	</main>
+
+	<!-- Client-side localization script -->
+	<script is:inline define:vars={{ languages }}>
+		// Detect locale based on pathname
+		const lang = window.location.pathname.startsWith('/en') ? 'en' : 'es';
+		const t = languages[lang];
+
+		// Set page meta title dynamically
+		document.title = t.title_404;
+
+		// Set text elements
+		const titleEl = document.getElementById('title-404');
+		const descEl = document.getElementById('desc-404');
+		const btnEl = document.getElementById('back-home-btn');
+
+		if (titleEl) titleEl.textContent = t.subheading_404;
+		if (descEl) descEl.textContent = t.desc_404;
+		if (btnEl) {
+			btnEl.textContent = t.btn_back_home;
+			btnEl.href = lang === 'en' ? '/en/' : '/';
+		}
+	</script>
+</Layout>

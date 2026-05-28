@@ -7,6 +7,10 @@ import {
     getMute 
 } from './audio.js';
 import { navigate } from 'astro:transitions/client';
+import { languages } from './translations.js';
+
+let currentLang = 'es';
+let t = languages.es;
 
 // --- BASE DE DATOS DE TEMAS PREDEFINIDOS ---
 const themes = [
@@ -213,7 +217,7 @@ function drawAlarmsList() {
     if (!list) return;
 
     if (state.alarms.length === 0) {
-        list.innerHTML = '<p class="empty-list-text">No hay alarmas configuradas.</p>';
+        list.innerHTML = `<p class="empty-list-text">${t.settings_alarm_none}</p>`;
         return;
     }
 
@@ -261,7 +265,7 @@ function triggerAlarm(alarm) {
     const labelEl = document.getElementById('triggered-alarm-label');
     const timeEl = document.getElementById('triggered-alarm-time');
 
-    if (labelEl) labelEl.textContent = alarm.label || "¡Alarma!";
+    if (labelEl) labelEl.textContent = alarm.label || t.alarm_triggered_label_default;
     if (timeEl) {
         const h = String(alarm.hour).padStart(2, '0');
         const m = String(alarm.minute).padStart(2, '0');
@@ -302,7 +306,7 @@ function snoozeAlarm() {
             id: 'snooze-' + Date.now(),
             hour: snoozeTime.getHours(),
             minute: snoozeTime.getMinutes(),
-            label: `Pospuesto: ${triggeredAlarmData.label}`,
+            label: `${t.alarm_snoozed_prefix}${triggeredAlarmData.label}`,
             active: true
         };
         
@@ -340,7 +344,7 @@ function updateClock() {
     const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
     const dateEl = document.getElementById('clock-date');
     if (dateEl) {
-        dateEl.textContent = now.toLocaleDateString('es-ES', dateOptions).toUpperCase();
+        dateEl.textContent = now.toLocaleDateString(currentLang === 'en' ? 'en-US' : 'es-ES', dateOptions).toUpperCase();
     }
 
     let hours = now.getHours();
@@ -470,7 +474,7 @@ async function fetchTimezoneTime(timezone) {
         }
     } catch (e) {
         console.warn("Failed to fetch timezone time from API:", e);
-        state.worldClock.errorMessage = 'No se pudo sincronizar la hora. Usando hora local aproximada.';
+        state.worldClock.errorMessage = t.wc_sync_error;
         
         try {
             const formatter = new Intl.DateTimeFormat('en-US', {
@@ -510,7 +514,7 @@ function updateWorldClockDisplay() {
     const dateOptions = { weekday: 'long', day: 'numeric', month: 'long' };
     const dateEl = document.getElementById('world-clock-date');
     if (dateEl) {
-        dateEl.textContent = now.toLocaleDateString('es-ES', dateOptions).toUpperCase();
+        dateEl.textContent = now.toLocaleDateString(currentLang === 'en' ? 'en-US' : 'es-ES', dateOptions).toUpperCase();
     }
 
     let hours = now.getHours();
@@ -590,7 +594,7 @@ function drawLapsList() {
     state.stopwatch.laps.forEach(lap => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>Vuelta ${lap.num}</td>
+            <td>${t.sw_btn_lap} ${lap.num}</td>
             <td>+${formatTimeMs(lap.delta)}</td>
             <td>${formatTimeMs(lap.total)}</td>
         `;
@@ -629,7 +633,7 @@ function triggerPomodoroEnd() {
         id: 'pomodoro-system',
         hour: new Date().getHours(),
         minute: new Date().getMinutes(),
-        label: pom.isBreak ? "¡Descanso Terminado! A trabajar." : "¡Focus Terminado! Momento de descansar."
+        label: pom.isBreak ? `${t.pom_break_end_title} ${t.pom_break_end_desc}` : `${t.pom_focus_end_title} ${t.pom_focus_end_desc}`
     });
 
     pom.isBreak = nextBreakState;
@@ -640,7 +644,7 @@ function triggerPomodoroEnd() {
 
     const statusBadge = document.getElementById('pomodoro-status');
     if (statusBadge) {
-        statusBadge.textContent = pom.isBreak ? "DESCANSO" : "TRABAJO";
+        statusBadge.textContent = pom.isBreak ? t.pom_badge_break : t.pom_badge_focus;
         statusBadge.style.color = pom.isBreak ? "#30d158" : "var(--accent-color)";
         statusBadge.style.borderColor = pom.isBreak ? "#30d158" : "var(--accent-color)";
         statusBadge.style.background = pom.isBreak ? "rgba(48, 209, 88, 0.08)" : "rgba(255, 149, 0, 0.08)";
@@ -648,7 +652,7 @@ function triggerPomodoroEnd() {
 
     const pomStartBtn = document.getElementById('pom-start-btn');
     if (pomStartBtn) {
-        pomStartBtn.textContent = 'Iniciar';
+        pomStartBtn.textContent = t.sw_btn_start;
         pomStartBtn.style.background = 'var(--text-color)';
         pomStartBtn.style.color = '#000';
     }
@@ -697,7 +701,7 @@ function triggerTimerEnd() {
         id: 'timer-system',
         hour: new Date().getHours(),
         minute: new Date().getMinutes(),
-        label: "Temporizador Terminado"
+        label: t.timer_finished
     });
 
     tm.timeLeft = tm.duration;
@@ -707,7 +711,7 @@ function triggerTimerEnd() {
 
     const tmStartBtn = document.getElementById('timer-start-btn');
     if (tmStartBtn) {
-        tmStartBtn.textContent = 'Iniciar';
+        tmStartBtn.textContent = t.sw_btn_start;
         tmStartBtn.style.background = 'var(--text-color)';
         tmStartBtn.style.color = '#000';
     }
@@ -837,29 +841,30 @@ if (!state.loopsInitialized) {
         }
 
         // View Navigations (Router-friendly!)
+        const prefix = currentLang === 'en' ? '/en' : '';
         if (key === '1' || key === 'c') {
             e.preventDefault();
-            navigate('/');
+            navigate(`${prefix}/`);
             return;
         }
         if (key === '2' || key === 's') {
             e.preventDefault();
-            navigate('/stopwatch');
+            navigate(`${prefix}/stopwatch`);
             return;
         }
         if (key === '3' || key === 'p') {
             e.preventDefault();
-            navigate('/pomodoro');
+            navigate(`${prefix}/pomodoro`);
             return;
         }
         if (key === '4' || key === 't') {
             e.preventDefault();
-            navigate('/timer');
+            navigate(`${prefix}/timer`);
             return;
         }
         if (key === '5' || key === 'w') {
             e.preventDefault();
-            navigate('/world-clock');
+            navigate(`${prefix}/world-clock`);
             return;
         }
 
@@ -934,9 +939,13 @@ if (!state.loopsInitialized) {
 
 // --- SETUP RUNS ON EVERY PAGE TRANSITION (astro:page-load) ---
 document.addEventListener('astro:page-load', () => {
+    // 0. Update active language based on pathname
+    currentLang = window.location.pathname.includes('/en') ? 'en' : 'es';
+    t = languages[currentLang];
+
     // 1. Determine active view based on url path
     const path = window.location.pathname;
-    if (path === '/' || path.endsWith('/index.html')) {
+    if (path === '/' || path.endsWith('/index.html') || path === '/en' || path.endsWith('/en/index.html')) {
         state.activeView = 'clock';
     } else if (path.includes('/world-clock')) {
         state.activeView = 'world-clock';
@@ -946,6 +955,12 @@ document.addEventListener('astro:page-load', () => {
         state.activeView = 'pomodoro';
     } else if (path.includes('/timer')) {
         state.activeView = 'timer';
+    }
+
+    // Update Keyboard Tip Toast dynamic translation
+    const toast = document.getElementById('toast-tip');
+    if (toast) {
+        toast.innerHTML = t.toast_hint_html;
     }
 
     // 2. Sync Sidebar link states
@@ -1063,7 +1078,7 @@ document.addEventListener('astro:page-load', () => {
             let label = lblInput.value.trim();
 
             if (isNaN(hr) || hr < 0 || hr > 23 || isNaN(min) || min < 0 || min > 59) {
-                alert("Por favor introduce una hora (0-23) y minutos (0-59) válidos.");
+                alert(t.validation_invalid_time);
                 return;
             }
 
@@ -1072,6 +1087,26 @@ document.addEventListener('astro:page-load', () => {
             hrInput.value = '';
             minInput.value = '';
             lblInput.value = '';
+        };
+    }
+
+    // Bind Language Toggles
+    const langBtnEs = document.getElementById('lang-btn-es');
+    const langBtnEn = document.getElementById('lang-btn-en');
+    if (langBtnEs) {
+        langBtnEs.onclick = () => {
+            if (currentLang === 'en') {
+                const newPath = window.location.pathname.replace(/^\/en/, '') || '/';
+                navigate(newPath);
+            }
+        };
+    }
+    if (langBtnEn) {
+        langBtnEn.onclick = () => {
+            if (currentLang === 'es') {
+                const newPath = window.location.pathname === '/' ? '/en' : `/en${window.location.pathname}`;
+                navigate(newPath);
+            }
         };
     }
 
@@ -1124,13 +1159,13 @@ document.addEventListener('astro:page-load', () => {
         if (swStartBtn && swLapBtn && swResetBtn) {
             // Re-sync UI states
             if (sw.isRunning) {
-                swStartBtn.textContent = 'Pausa';
+                swStartBtn.textContent = t.sw_btn_pause;
                 swStartBtn.style.background = '#ff3b30';
                 swStartBtn.style.color = '#fff';
                 swLapBtn.disabled = false;
                 swResetBtn.disabled = true;
             } else {
-                swStartBtn.textContent = 'Iniciar';
+                swStartBtn.textContent = t.sw_btn_start;
                 swStartBtn.style.background = 'var(--text-color)';
                 swStartBtn.style.color = '#000';
                 swLapBtn.disabled = true;
@@ -1144,7 +1179,7 @@ document.addEventListener('astro:page-load', () => {
                     sw.startTime = Date.now() - sw.elapsedTime;
                     sw.interval = setInterval(runStopwatchLoop, 30);
                     
-                    swStartBtn.textContent = 'Pausa';
+                    swStartBtn.textContent = t.sw_btn_pause;
                     swStartBtn.style.background = '#ff3b30';
                     swStartBtn.style.color = '#fff';
                     swLapBtn.disabled = false;
@@ -1154,7 +1189,7 @@ document.addEventListener('astro:page-load', () => {
                     clearInterval(sw.interval);
                     sw.interval = null;
 
-                    swStartBtn.textContent = 'Iniciar';
+                    swStartBtn.textContent = t.sw_btn_start;
                     swStartBtn.style.background = 'var(--text-color)';
                     swStartBtn.style.color = '#000';
                     swLapBtn.disabled = true;
@@ -1186,7 +1221,7 @@ document.addEventListener('astro:page-load', () => {
                 drawStopwatch();
                 drawLapsList();
 
-                swStartBtn.textContent = 'Iniciar';
+                swStartBtn.textContent = t.sw_btn_start;
                 swStartBtn.style.background = 'var(--text-color)';
                 swStartBtn.style.color = '#000';
                 swLapBtn.disabled = true;
@@ -1206,17 +1241,17 @@ document.addEventListener('astro:page-load', () => {
         if (pomStartBtn && pomResetBtn) {
             // Re-sync UI states
             if (pom.isRunning) {
-                pomStartBtn.textContent = 'Pausa';
+                pomStartBtn.textContent = t.sw_btn_pause;
                 pomStartBtn.style.background = '#ff3b30';
                 pomStartBtn.style.color = '#fff';
             } else {
-                pomStartBtn.textContent = 'Iniciar';
+                pomStartBtn.textContent = t.sw_btn_start;
                 pomStartBtn.style.background = 'var(--text-color)';
                 pomStartBtn.style.color = '#000';
             }
 
             if (statusBadge) {
-                statusBadge.textContent = pom.isBreak ? "DESCANSO" : "TRABAJO";
+                statusBadge.textContent = pom.isBreak ? t.pom_badge_break : t.pom_badge_focus;
                 statusBadge.style.color = pom.isBreak ? "#30d158" : "var(--accent-color)";
                 statusBadge.style.borderColor = pom.isBreak ? "#30d158" : "var(--accent-color)";
                 statusBadge.style.background = pom.isBreak ? "rgba(48, 209, 88, 0.08)" : "rgba(255, 149, 0, 0.08)";
@@ -1237,14 +1272,14 @@ document.addEventListener('astro:page-load', () => {
                 if (!pom.isRunning) {
                     pom.isRunning = true;
                     pom.interval = setInterval(runPomodoroTick, 1000);
-                    pomStartBtn.textContent = 'Pausa';
+                    pomStartBtn.textContent = t.sw_btn_pause;
                     pomStartBtn.style.background = '#ff3b30';
                     pomStartBtn.style.color = '#fff';
                 } else {
                     pom.isRunning = false;
                     clearInterval(pom.interval);
                     pom.interval = null;
-                    pomStartBtn.textContent = 'Iniciar';
+                    pomStartBtn.textContent = t.sw_btn_start;
                     pomStartBtn.style.background = 'var(--text-color)';
                     pomStartBtn.style.color = '#000';
                 }
@@ -1258,13 +1293,13 @@ document.addEventListener('astro:page-load', () => {
                 pom.timeLeft = pom.focusDuration * 60;
 
                 if (statusBadge) {
-                    statusBadge.textContent = "TRABAJO";
+                    statusBadge.textContent = t.pom_badge_focus;
                     statusBadge.style.color = "var(--accent-color)";
                     statusBadge.style.borderColor = "var(--accent-color)";
                     statusBadge.style.background = "rgba(255, 149, 0, 0.08)";
                 }
 
-                pomStartBtn.textContent = 'Iniciar';
+                pomStartBtn.textContent = t.sw_btn_start;
                 pomStartBtn.style.background = 'var(--text-color)';
                 pomStartBtn.style.color = '#000';
                 
@@ -1291,14 +1326,14 @@ document.addEventListener('astro:page-load', () => {
                 pom.timeLeft = focus * 60;
 
                 if (statusBadge) {
-                    statusBadge.textContent = "TRABAJO";
+                    statusBadge.textContent = t.pom_badge_focus;
                     statusBadge.style.color = "var(--accent-color)";
                     statusBadge.style.borderColor = "var(--accent-color)";
                     statusBadge.style.background = "rgba(255, 149, 0, 0.08)";
                 }
 
                 if (pomStartBtn) {
-                    pomStartBtn.textContent = 'Iniciar';
+                    pomStartBtn.textContent = t.sw_btn_start;
                     pomStartBtn.style.background = 'var(--text-color)';
                     pomStartBtn.style.color = '#000';
                 }
@@ -1317,11 +1352,11 @@ document.addEventListener('astro:page-load', () => {
         if (tmStartBtn && tmResetBtn) {
             // Re-sync UI states
             if (tm.isRunning) {
-                tmStartBtn.textContent = 'Pausa';
+                tmStartBtn.textContent = t.sw_btn_pause;
                 tmStartBtn.style.background = '#ff3b30';
                 tmStartBtn.style.color = '#fff';
             } else {
-                tmStartBtn.textContent = 'Iniciar';
+                tmStartBtn.textContent = t.sw_btn_start;
                 tmStartBtn.style.background = 'var(--text-color)';
                 tmStartBtn.style.color = '#000';
             }
@@ -1340,14 +1375,14 @@ document.addEventListener('astro:page-load', () => {
                 if (!tm.isRunning) {
                     tm.isRunning = true;
                     tm.interval = setInterval(runTimerTick, 1000);
-                    tmStartBtn.textContent = 'Pausa';
+                    tmStartBtn.textContent = t.sw_btn_pause;
                     tmStartBtn.style.background = '#ff3b30';
                     tmStartBtn.style.color = '#fff';
                 } else {
                     tm.isRunning = false;
                     clearInterval(tm.interval);
                     tm.interval = null;
-                    tmStartBtn.textContent = 'Iniciar';
+                    tmStartBtn.textContent = t.sw_btn_start;
                     tmStartBtn.style.background = 'var(--text-color)';
                     tmStartBtn.style.color = '#000';
                 }
@@ -1359,7 +1394,7 @@ document.addEventListener('astro:page-load', () => {
                 tm.interval = null;
                 tm.timeLeft = tm.duration;
 
-                tmStartBtn.textContent = 'Iniciar';
+                tmStartBtn.textContent = t.sw_btn_start;
                 tmStartBtn.style.background = 'var(--text-color)';
                 tmStartBtn.style.color = '#000';
                 
@@ -1382,7 +1417,7 @@ document.addEventListener('astro:page-load', () => {
                 tm.timeLeft = secs;
 
                 if (tmStartBtn) {
-                    tmStartBtn.textContent = 'Iniciar';
+                    tmStartBtn.textContent = t.sw_btn_start;
                     tmStartBtn.style.background = 'var(--text-color)';
                     tmStartBtn.style.color = '#000';
                 }
@@ -1435,7 +1470,7 @@ document.addEventListener('astro:page-load', () => {
             const filtered = listToUse.filter(tz => tz.toLowerCase().includes(query)).slice(0, 10);
             
             if (filtered.length === 0) {
-                dropdown.innerHTML = '<div class="timezone-item" style="pointer-events:none; opacity:0.5;">No hay resultados</div>';
+                dropdown.innerHTML = `<div class="timezone-item" style="pointer-events:none; opacity:0.5;">${t.wc_no_results}</div>`;
             } else {
                 filtered.forEach(tz => {
                     const item = document.createElement('div');
@@ -1453,6 +1488,7 @@ document.addEventListener('astro:page-load', () => {
         };
 
         if (searchInput) {
+            searchInput.placeholder = t.wc_search_placeholder;
             searchInput.oninput = (e) => {
                 renderDropdown(e.target.value);
             };

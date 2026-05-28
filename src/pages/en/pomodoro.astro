@@ -1,9 +1,9 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import FlipCard from '../components/FlipCard.astro';
-import Sidebar from '../components/Sidebar.astro';
-import SettingsPanel from '../components/SettingsPanel.astro';
-import { languages } from '../utils/translations.js';
+import Layout from '../../layouts/Layout.astro';
+import FlipCard from '../../components/FlipCard.astro';
+import Sidebar from '../../components/Sidebar.astro';
+import SettingsPanel from '../../components/SettingsPanel.astro';
+import { languages } from '../../utils/translations.js';
 
 const locale = Astro.currentLocale || 'es';
 const t = languages[locale];
@@ -96,4 +96,4 @@ const t = languages[locale];
 	</main>
 </Layout>
 
-<script src="../utils/app.js"></script>
+<script src="../../utils/app.js"></script>
