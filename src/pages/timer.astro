@@ -6,8 +6,8 @@ import SettingsPanel from '../components/SettingsPanel.astro';
 ---
 
 <Layout 
-	title="Broslunas Clock" 
-	description="Suite multifuncional premium de tiempo: Reloj, Cronómetro con vueltas, Temporizador Pomodoro y Alarmas con sonidos relajantes de enfoque."
+	title="Temporizador - Broslunas Clock" 
+	description="Temporizador de cuenta regresiva con visualización flip y campana Zen meditativa, perfecto para controlar tus bloques de estudio."
 >
 	<!-- CONTENEDOR PRINCIPAL -->
 	<main class="app-container" id="app-canvas">
@@ -22,33 +22,49 @@ import SettingsPanel from '../components/SettingsPanel.astro';
 		<!-- CONTENEDOR DE PERSPECTIVA 3D -->
 		<div class="parallax-wrapper" id="parallax-target" transition:animate="fade">
 			<!-- ==============================================
-			     VISTA 1: RELOJ CLÁSICO 
+			     VISTA 4: TEMPORIZADOR (TIMER) 
 			     ============================================== -->
-			<section class="view-panel active" id="view-clock">
-				<div class="date-display" id="clock-date">Cargando fecha...</div>
-				
-				<div class="flip-clock-row">
-					<div class="flip-group">
-						<FlipCard id="h1" />
-						<FlipCard id="h2" />
-					</div>
-					
-					<div class="colon">:</div>
+			<section class="view-panel active" id="view-timer">
+				<h2 class="view-title">Temporizador</h2>
 
-					<div class="flip-group">
-						<FlipCard id="m1" />
-						<FlipCard id="m2" />
-					</div>
+				<div class="progress-ring-container">
+					<svg class="progress-ring-svg" width="300" height="300">
+						<circle class="progress-ring-bg" cx="150" cy="150" r="135" />
+						<circle class="progress-ring-bar" id="timer-progress-bar" cx="150" cy="150" r="135" />
+					</svg>
 
-					<div class="colon s-colon" id="clock-s-colon" style="display:none;">:</div>
-
-					<div class="flip-group s-group" id="clock-s-group" style="display:none;">
-						<FlipCard id="s1" />
-						<FlipCard id="s2" />
+					<div class="clock-inside-ring">
+						<div class="flip-clock-row compact">
+							<div class="flip-group">
+								<FlipCard id="tm-h1" />
+								<FlipCard id="tm-h2" />
+							</div>
+							<div class="colon">:</div>
+							<div class="flip-group">
+								<FlipCard id="tm-m1" />
+								<FlipCard id="tm-m2" />
+							</div>
+							<div class="colon">:</div>
+							<div class="flip-group">
+								<FlipCard id="tm-s1" />
+								<FlipCard id="tm-s2" />
+							</div>
+						</div>
 					</div>
 				</div>
 
-				<div class="ampm-badge" id="clock-ampm">AM</div>
+				<div class="controls-row">
+					<button id="timer-start-btn" class="control-btn play-btn">Iniciar</button>
+					<button id="timer-reset-btn" class="control-btn border-btn">Reiniciar</button>
+				</div>
+
+				<div class="presets-row" id="timer-presets">
+					<button class="preset-pill" data-seconds="60">1m</button>
+					<button class="preset-pill" data-seconds="300">5m</button>
+					<button class="preset-pill" data-seconds="600">10m</button>
+					<button class="preset-pill active" data-seconds="1800">30m</button>
+					<button class="preset-pill" data-seconds="3600">1h</button>
+				</div>
 			</section>
 		</div>
 

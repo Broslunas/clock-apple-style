@@ -1,4 +1,6 @@
 ---
+import { ClientRouter } from 'astro:transitions';
+
 interface Props {
 	title: string;
 	description: string;
@@ -37,6 +39,7 @@ const { title, description } = Astro.props;
 		<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
 
 		<meta name="generator" content={Astro.generator} />
+		<ClientRouter />
 	</head>
 	<body>
 		<slot />
@@ -108,5 +111,597 @@ const { title, description } = Astro.props;
 	/* Utilidades generales */
 	.text-mono {
 		font-family: var(--font-mono);
+	}
+
+	/* --- MAQUETADO DE PÁGINA --- */
+	.app-container {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		align-items: center;
+		min-height: 100vh;
+		padding: 24px 20px 32px 20px; /* Margen inferior ajustado */
+		position: relative;
+		overflow: hidden;
+	}
+
+	.app-header {
+		width: 100%;
+		max-width: 1200px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		z-index: 100;
+		padding-left: 60px; /* Evita que el botón de hamburguesa tape el título */
+	}
+
+	.brand-title {
+		font-weight: 800;
+		font-size: 1.4rem;
+		letter-spacing: -1px;
+		background: linear-gradient(180deg, #fff 0%, rgba(255, 255, 255, 0.6) 100%);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+	}
+
+	.alarm-badge-status {
+		background: rgba(255, 149, 0, 0.15);
+		color: var(--accent-color);
+		padding: 4px 12px;
+		border-radius: 12px;
+		font-size: 0.75rem;
+		font-weight: 700;
+		border: 1px solid rgba(255, 149, 0, 0.2);
+		animation: pulseGlow 2s infinite;
+	}
+
+	@keyframes pulseGlow {
+		0%, 100% { opacity: 0.7; transform: scale(1); }
+		50% { opacity: 1; transform: scale(1.03); }
+	}
+
+	/* CONTENEDOR 3D PARALLAX */
+	.parallax-wrapper {
+		flex-grow: 1;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+		max-width: 1000px;
+		transform-style: preserve-3d;
+		transform: rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+		transition: transform 0.15s ease-out;
+		z-index: 200;
+	}
+
+	/* VISTA PANEL GENERAL */
+	.view-panel {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+		text-align: center;
+		animation: fadeIn 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; transform: translateY(15px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.view-title {
+		font-size: 1.3rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 4px;
+		opacity: 0.5;
+		margin-bottom: 1.2rem;
+	}
+
+	/* Renglón del Reloj Flip */
+	.flip-clock-row {
+		display: flex;
+		gap: 24px;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.flip-group {
+		display: flex;
+		gap: 6px;
+	}
+
+	/* Separadores : */
+	.colon {
+		font-size: 5rem;
+		font-weight: 200;
+		opacity: 0.4;
+		animation: colonBlink 1.5s infinite;
+		align-self: center;
+		margin: 0 -4px;
+		transform: translateY(-8px);
+	}
+
+	@keyframes colonBlink {
+		0%, 100% { opacity: 0.15; }
+		50% { opacity: 0.75; }
+	}
+
+	/* ELEMENTOS VISTA RELOJ */
+	.date-display {
+		font-size: 1.1rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 4px;
+		opacity: 0.8;
+		margin-bottom: 2.5rem;
+		text-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+	}
+
+	.ampm-badge {
+		font-size: 1.1rem;
+		font-weight: 700;
+		letter-spacing: 3px;
+		opacity: 0.8;
+		margin-top: 2.5rem;
+		text-transform: uppercase;
+		background: rgba(255,255,255,0.06);
+		padding: 4px 14px;
+		border-radius: 10px;
+		border: 1px solid rgba(255,255,255,0.04);
+	}
+
+	/* CONTROLES GENERALES (BOTONES) */
+	.controls-row {
+		display: flex;
+		gap: 16px;
+		margin-top: 1.2rem;
+		z-index: 50;
+	}
+
+	.control-btn {
+		height: 48px;
+		padding: 0 28px;
+		border-radius: 24px;
+		font-size: 0.95rem;
+		font-weight: 700;
+		cursor: pointer;
+		transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.play-btn {
+		background: var(--text-color);
+		color: #000;
+		border: none;
+		box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+	}
+
+	.play-btn:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 15px 25px rgba(0, 0, 0, 0.35);
+		background: var(--accent-color);
+	}
+
+	.border-btn {
+		background: rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		color: #fff;
+		backdrop-filter: blur(10px);
+	}
+
+	.border-btn:hover {
+		background: rgba(255, 255, 255, 0.15);
+		border-color: rgba(255, 255, 255, 0.2);
+		transform: translateY(-1px);
+	}
+
+	.border-btn:disabled {
+		opacity: 0.3;
+		pointer-events: none;
+	}
+
+	/* TABLA DE VUELTAS (CRONÓMETRO) */
+	.laps-wrapper {
+		margin-top: 2rem;
+		max-height: 180px;
+		overflow-y: auto;
+		width: 100%;
+		max-width: 420px;
+		background: rgba(255, 255, 255, 0.02);
+		border: 1px solid rgba(255, 255, 255, 0.04);
+		border-radius: 16px;
+		padding: 4px;
+	}
+
+	.laps-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.85rem;
+		text-align: left;
+	}
+
+	.laps-table th {
+		padding: 10px 16px;
+		font-weight: 700;
+		color: rgba(255, 255, 255, 0.4);
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		font-size: 0.7rem;
+	}
+
+	.laps-table td {
+		padding: 8px 16px;
+		font-family: var(--font-mono);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+	}
+
+	.laps-table tr:last-child td {
+		border-bottom: none;
+	}
+
+	/* ANILLO DE PROGRESO DE POMODORO Y TIMER */
+	.progress-ring-container {
+		position: relative;
+		width: 300px;
+		height: 300px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.progress-ring-svg {
+		position: absolute;
+		top: 0;
+		left: 0;
+		transform: rotate(-90deg); /* Empezar por arriba */
+	}
+
+	.progress-ring-bg {
+		fill: none;
+		stroke: rgba(255, 255, 255, 0.03);
+		stroke-width: 8px;
+	}
+
+	.progress-ring-bar {
+		fill: none;
+		stroke: var(--accent-color);
+		stroke-width: 8px;
+		stroke-linecap: round;
+		/* 2 * pi * 135 = 848.23 */
+		stroke-dasharray: 848;
+		stroke-dashoffset: 848;
+		transition: stroke-dashoffset 0.3s linear, stroke 0.5s ease;
+		filter: drop-shadow(0 0 6px var(--accent-color));
+	}
+
+	/* Ajuste de escala para tarjetas dentro de los anillos */
+	#view-pomodoro .progress-ring-container {
+		--card-width: 56px;
+		--card-height: 76px;
+		--card-font-size: 3.5rem;
+		--card-radius: 8px;
+	}
+
+	#view-timer .progress-ring-container {
+		--card-width: 38px;
+		--card-height: 52px;
+		--card-font-size: 2.3rem;
+		--card-radius: 5px;
+	}
+
+	.clock-inside-ring {
+		z-index: 10;
+	}
+
+	.flip-clock-row.compact {
+		gap: 12px;
+	}
+
+	.compact .colon {
+		font-size: 3.5rem;
+		transform: translateY(-4px);
+	}
+
+	/* PRESETS (POMODORO & TIMER) */
+	.presets-row {
+		display: flex;
+		gap: 10px;
+		margin-top: 1rem;
+		z-index: 50;
+	}
+
+	.preset-pill {
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		color: rgba(255, 255, 255, 0.7);
+		height: 36px;
+		padding: 0 16px;
+		border-radius: 18px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.preset-pill:hover {
+		background: rgba(255, 255, 255, 0.12);
+		color: #fff;
+	}
+
+	.preset-pill.active {
+		background: var(--accent-color);
+		color: #000;
+		border-color: transparent;
+		font-weight: 700;
+	}
+
+	.pomodoro-badge {
+		font-size: 0.8rem;
+		font-weight: 800;
+		letter-spacing: 3px;
+		color: var(--accent-color);
+		border: 1.5px solid var(--accent-color);
+		padding: 5px 16px;
+		border-radius: 20px;
+		margin-top: 1rem;
+		background: rgba(255, 149, 0, 0.08);
+		animation: badgeGlow 3s infinite;
+	}
+
+	@keyframes badgeGlow {
+		0%, 100% { filter: drop-shadow(0 0 1px var(--accent-color)); }
+		50% { filter: drop-shadow(0 0 6px var(--accent-color)); }
+	}
+
+	/* TOAST HINT */
+	.toast-tip {
+		position: fixed;
+		bottom: 24px;
+		background: rgba(0, 0, 0, 0.6);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		padding: 8px 16px;
+		border-radius: 20px;
+		font-size: 0.8rem;
+		font-weight: 500;
+		opacity: 0.65;
+		transition: opacity 0.5s;
+		pointer-events: none;
+		z-index: 100;
+	}
+
+	/* OVERLAY DE ALARMA DISPARADA */
+	.alarm-triggered-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(10, 10, 12, 0.92);
+		backdrop-filter: blur(40px);
+		-webkit-backdrop-filter: blur(40px);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 9999;
+		animation: overlayFadeIn 0.3s forwards;
+	}
+
+	@keyframes overlayFadeIn {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
+	.alarm-triggered-box {
+		text-align: center;
+		padding: 40px;
+		border-radius: 30px;
+		background: rgba(255, 255, 255, 0.04);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+		max-width: 440px;
+		width: 90%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 20px;
+	}
+
+	.alarm-bell-icon {
+		width: 80px;
+		height: 80px;
+		background: rgba(255, 149, 0, 0.15);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--accent-color);
+		animation: ringWobble 0.5s infinite;
+	}
+
+	.alarm-bell-icon svg {
+		width: 40px;
+		height: 40px;
+	}
+
+	@keyframes ringWobble {
+		0%, 100% { transform: rotate(0); }
+		25% { transform: rotate(-15deg); }
+		75% { transform: rotate(15deg); }
+	}
+
+	.alarm-triggered-box h2 {
+		font-size: 1.6rem;
+		font-weight: 800;
+	}
+
+	.alarm-triggered-box p {
+		font-size: 3.5rem;
+		font-weight: 800;
+		font-family: var(--font-mono);
+		color: var(--accent-color);
+	}
+
+	.overlay-controls {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		width: 100%;
+		margin-top: 10px;
+	}
+
+	.overlay-btn {
+		height: 50px;
+		border-radius: 12px;
+		font-weight: 700;
+		font-size: 0.95rem;
+		cursor: pointer;
+		transition: all 0.2s;
+		width: 100%;
+		border: none;
+	}
+
+	.overlay-btn.snooze {
+		background: rgba(255, 255, 255, 0.1);
+		color: #fff;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+	}
+
+	.overlay-btn.snooze:hover {
+		background: rgba(255, 255, 255, 0.18);
+	}
+
+	.overlay-btn.dismiss {
+		background: #ff453a; /* iOS Red */
+		color: #fff;
+	}
+
+	.overlay-btn.dismiss:hover {
+		background: #ff5b52;
+		transform: scale(1.02);
+	}
+
+	/* RESPONSIVIDAD GENERAL */
+	@media (max-width: 900px) {
+		.flip-clock-row {
+			gap: 12px;
+		}
+		.colon {
+			font-size: 3.8rem;
+			transform: translateY(-4px);
+		}
+		.progress-ring-container {
+			width: 250px;
+			height: 250px;
+		}
+		.progress-ring-svg {
+			width: 250px;
+			height: 250px;
+		}
+		.progress-ring-bg, .progress-ring-bar {
+			cx: 125px;
+			cy: 125px;
+			r: 110px;
+			stroke-width: 6px;
+		}
+		.progress-ring-bar {
+			/* 2 * pi * 110 = 691.15 */
+			stroke-dasharray: 691;
+			stroke-dashoffset: 691;
+		}
+		.laps-wrapper {
+			max-width: 320px;
+		}
+		
+		#view-pomodoro .progress-ring-container {
+			--card-width: 44px;
+			--card-height: 60px;
+			--card-font-size: 2.8rem;
+			--card-radius: 6px;
+		}
+
+		#view-timer .progress-ring-container {
+			--card-width: 30px;
+			--card-height: 40px;
+			--card-font-size: 1.8rem;
+			--card-radius: 4px;
+		}
+	}
+
+	@media (max-width: 600px) {
+		.app-container {
+			padding-bottom: 32px;
+		}
+		.flip-clock-row {
+			gap: 6px;
+		}
+		.colon {
+			font-size: 2.2rem;
+			transform: translateY(-2px);
+			margin: 0 -2px;
+		}
+		.view-title {
+			margin-bottom: 1.5rem;
+			font-size: 1rem;
+		}
+		.date-display {
+			font-size: 0.9rem;
+			margin-bottom: 1.5rem;
+		}
+		.ampm-badge {
+			font-size: 0.9rem;
+			margin-top: 1.5rem;
+		}
+		.progress-ring-container {
+			width: 180px;
+			height: 180px;
+		}
+		.progress-ring-svg {
+			width: 180px;
+			height: 180px;
+		}
+		.progress-ring-bg, .progress-ring-bar {
+			cx: 90px;
+			cy: 90px;
+			r: 76px;
+			stroke-width: 5px;
+		}
+		.progress-ring-bar {
+			/* 2 * pi * 76 = 477.52 */
+			stroke-dasharray: 477;
+			stroke-dashoffset: 477;
+		}
+		
+		#view-pomodoro .progress-ring-container {
+			--card-width: 30px;
+			--card-height: 40px;
+			--card-font-size: 1.8rem;
+			--card-radius: 4px;
+		}
+
+		#view-timer .progress-ring-container {
+			--card-width: 22px;
+			--card-height: 30px;
+			--card-font-size: 1.3rem;
+			--card-radius: 3px;
+		}
+
+		.compact .colon {
+			font-size: 1.5rem;
+			transform: translateY(-1px);
+			margin: 0;
+		}
+		.toast-tip {
+			bottom: 32px;
+			font-size: 0.7rem;
+		}
+		.laps-wrapper {
+			max-width: 260px;
+		}
 	}
 </style>

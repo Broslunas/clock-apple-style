@@ -2,7 +2,7 @@
 ---
 
 <!-- Botón de Hamburguesa Flotante Premium -->
-<button class="hamburger-trigger" id="hamburger-btn" aria-label="Abrir menú" aria-expanded="false">
+<button class="hamburger-trigger" id="hamburger-btn" aria-label="Abrir menú" aria-expanded="false" transition:persist>
     <svg class="hamburger-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
         <line class="line-top" x1="4" y1="6" x2="20" y2="6"></line>
         <line class="line-mid" x1="4" y1="12" x2="20" y2="12"></line>
@@ -11,7 +11,7 @@
 </button>
 
 <!-- Menú Lateral Colapsable (Sidebar Drawer) -->
-<nav class="sidebar-container" id="app-sidebar" aria-label="Menú principal lateral">
+<nav class="sidebar-container" id="app-sidebar" aria-label="Menú principal lateral" transition:persist>
     <div class="sidebar-brand">
         <svg xmlns="http://www.w3.org/2000/svg" class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <circle cx="12" cy="12" r="10"></circle>
@@ -22,17 +22,17 @@
 
     <div class="sidebar-menu">
         <!-- Reloj (Clock) -->
-        <button class="menu-item active" data-view="clock" title="Reloj (Atajo: 1 / C)">
+        <a href="/" class="menu-item active" data-view="clock" title="Reloj (Atajo: 1 / C)">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
             <span>Reloj</span>
             <kbd class="key-hint">1</kbd>
-        </button>
+        </a>
 
         <!-- Cronómetro (Stopwatch) -->
-        <button class="menu-item" data-view="stopwatch" title="Cronómetro (Atajo: 2 / S)">
+        <a href="/stopwatch" class="menu-item" data-view="stopwatch" title="Cronómetro (Atajo: 2 / S)">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="10" y1="2" x2="14" y2="2"></line>
                 <line x1="12" y1="14" x2="15" y2="11"></line>
@@ -40,20 +40,20 @@
             </svg>
             <span>Cronómetro</span>
             <kbd class="key-hint">2</kbd>
-        </button>
+        </a>
 
         <!-- Pomodoro -->
-        <button class="menu-item" data-view="pomodoro" title="Pomodoro (Atajo: 3 / P)">
+        <a href="/pomodoro" class="menu-item" data-view="pomodoro" title="Pomodoro (Atajo: 3 / P)">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 2v4M4.22 5.78l2.83 2.83M19.78 5.78l-2.83 2.83"></path>
                 <path d="M12 6c-3.87 0-7 2.69-7 6a7.1 7.1 0 0 0 2.24 5.16c.3.26.43.68.32 1.07L7 21h10l-.56-2.77c-.1-.39.02-.81.32-1.07A7.1 7.1 0 0 0 19 12c0-3.31-3.13-6-7-6z"></path>
             </svg>
             <span>Pomodoro</span>
             <kbd class="key-hint">3</kbd>
-        </button>
+        </a>
 
         <!-- Temporizador (Timer) -->
-        <button class="menu-item" data-view="timer" title="Temporizador (Atajo: 4 / T)">
+        <a href="/timer" class="menu-item" data-view="timer" title="Temporizador (Atajo: 4 / T)">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
@@ -61,7 +61,7 @@
             </svg>
             <span>Temporizador</span>
             <kbd class="key-hint">4</kbd>
-        </button>
+        </a>
     </div>
 
     <div class="sidebar-footer">

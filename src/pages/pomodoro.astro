@@ -6,8 +6,8 @@ import SettingsPanel from '../components/SettingsPanel.astro';
 ---
 
 <Layout 
-	title="Broslunas Clock" 
-	description="Suite multifuncional premium de tiempo: Reloj, Cronómetro con vueltas, Temporizador Pomodoro y Alarmas con sonidos relajantes de enfoque."
+	title="Pomodoro - Broslunas Clock" 
+	description="Temporizador Pomodoro premium con alertas relajantes, diseñado para estructurar tus bloques de estudio sin distracciones."
 >
 	<!-- CONTENEDOR PRINCIPAL -->
 	<main class="app-container" id="app-canvas">
@@ -22,33 +22,44 @@ import SettingsPanel from '../components/SettingsPanel.astro';
 		<!-- CONTENEDOR DE PERSPECTIVA 3D -->
 		<div class="parallax-wrapper" id="parallax-target" transition:animate="fade">
 			<!-- ==============================================
-			     VISTA 1: RELOJ CLÁSICO 
+			     VISTA 3: POMODORO 
 			     ============================================== -->
-			<section class="view-panel active" id="view-clock">
-				<div class="date-display" id="clock-date">Cargando fecha...</div>
-				
-				<div class="flip-clock-row">
-					<div class="flip-group">
-						<FlipCard id="h1" />
-						<FlipCard id="h2" />
-					</div>
-					
-					<div class="colon">:</div>
+			<section class="view-panel active" id="view-pomodoro">
+				<h2 class="view-title">Pomodoro</h2>
 
-					<div class="flip-group">
-						<FlipCard id="m1" />
-						<FlipCard id="m2" />
-					</div>
+				<div class="progress-ring-container">
+					<svg class="progress-ring-svg" width="300" height="300">
+						<circle class="progress-ring-bg" cx="150" cy="150" r="135" />
+						<circle class="progress-ring-bar" id="pom-progress-bar" cx="150" cy="150" r="135" />
+					</svg>
 
-					<div class="colon s-colon" id="clock-s-colon" style="display:none;">:</div>
-
-					<div class="flip-group s-group" id="clock-s-group" style="display:none;">
-						<FlipCard id="s1" />
-						<FlipCard id="s2" />
+					<div class="clock-inside-ring">
+						<div class="flip-clock-row compact">
+							<div class="flip-group">
+								<FlipCard id="pom-m1" />
+								<FlipCard id="pom-m2" />
+							</div>
+							<div class="colon">:</div>
+							<div class="flip-group">
+								<FlipCard id="pom-s1" />
+								<FlipCard id="pom-s2" />
+							</div>
+						</div>
 					</div>
 				</div>
 
-				<div class="ampm-badge" id="clock-ampm">AM</div>
+				<div class="pomodoro-badge" id="pomodoro-status">TRABAJO</div>
+
+				<div class="controls-row">
+					<button id="pom-start-btn" class="control-btn play-btn">Iniciar</button>
+					<button id="pom-reset-btn" class="control-btn border-btn">Reiniciar</button>
+				</div>
+
+				<div class="presets-row" id="pom-presets">
+					<button class="preset-pill active" data-focus="25" data-break="5">25 / 5 Min</button>
+					<button class="preset-pill" data-focus="50" data-break="10">50 / 10 Min</button>
+					<button class="preset-pill" data-focus="15" data-break="3">15 / 3 Min</button>
+				</div>
 			</section>
 		</div>
 

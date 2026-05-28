@@ -6,8 +6,8 @@ import SettingsPanel from '../components/SettingsPanel.astro';
 ---
 
 <Layout 
-	title="Broslunas Clock" 
-	description="Suite multifuncional premium de tiempo: Reloj, Cronómetro con vueltas, Temporizador Pomodoro y Alarmas con sonidos relajantes de enfoque."
+	title="Cronómetro - Broslunas Clock" 
+	description="Cronómetro de alta precisión con registro de vueltas, diseñado con estética premium para tus sesiones de estudio y trabajo."
 >
 	<!-- CONTENEDOR PRINCIPAL -->
 	<main class="app-container" id="app-canvas">
@@ -22,33 +22,53 @@ import SettingsPanel from '../components/SettingsPanel.astro';
 		<!-- CONTENEDOR DE PERSPECTIVA 3D -->
 		<div class="parallax-wrapper" id="parallax-target" transition:animate="fade">
 			<!-- ==============================================
-			     VISTA 1: RELOJ CLÁSICO 
+			     VISTA 2: CRONÓMETRO 
 			     ============================================== -->
-			<section class="view-panel active" id="view-clock">
-				<div class="date-display" id="clock-date">Cargando fecha...</div>
+			<section class="view-panel active" id="view-stopwatch">
+				<h2 class="view-title">Cronómetro</h2>
 				
 				<div class="flip-clock-row">
 					<div class="flip-group">
-						<FlipCard id="h1" />
-						<FlipCard id="h2" />
+						<FlipCard id="sw-m1" label="Min" />
+						<FlipCard id="sw-m2" />
 					</div>
 					
 					<div class="colon">:</div>
 
 					<div class="flip-group">
-						<FlipCard id="m1" />
-						<FlipCard id="m2" />
+						<FlipCard id="sw-s1" label="Seg" />
+						<FlipCard id="sw-s2" />
 					</div>
 
-					<div class="colon s-colon" id="clock-s-colon" style="display:none;">:</div>
+					<div class="colon">:</div>
 
-					<div class="flip-group s-group" id="clock-s-group" style="display:none;">
-						<FlipCard id="s1" />
-						<FlipCard id="s2" />
+					<div class="flip-group ms-group">
+						<FlipCard id="sw-ms1" label="Cen" />
+						<FlipCard id="sw-ms2" />
 					</div>
 				</div>
 
-				<div class="ampm-badge" id="clock-ampm">AM</div>
+				<div class="controls-row">
+					<button id="sw-lap-btn" class="control-btn border-btn" disabled>Vuelta</button>
+					<button id="sw-start-btn" class="control-btn play-btn">Iniciar</button>
+					<button id="sw-reset-btn" class="control-btn border-btn" disabled>Reiniciar</button>
+				</div>
+
+				<!-- Tabla de vueltas -->
+				<div class="laps-wrapper">
+					<table class="laps-table">
+						<thead>
+							<tr>
+								<th>Nº</th>
+								<th>Tiempo</th>
+								<th>Total</th>
+							</tr>
+						</thead>
+						<tbody id="laps-list">
+							<!-- Inyecciones dinámicas -->
+						</tbody>
+					</table>
+				</div>
 			</section>
 		</div>
 
