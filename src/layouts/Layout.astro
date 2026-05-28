@@ -892,4 +892,150 @@ if (locale === 'en') {
 	@keyframes spin {
 		to { transform: rotate(360deg); }
 	}
+
+	/* SELECTOR DE IDIOMA */
+	.lang-selector {
+		display: flex;
+		gap: 6px;
+		background: rgba(0, 0, 0, 0.2);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		border-radius: 8px;
+		padding: 2px;
+	}
+
+	.lang-btn {
+		background: transparent;
+		border: none;
+		color: rgba(255, 255, 255, 0.5);
+		padding: 4px 10px;
+		font-size: 0.75rem;
+		font-weight: 700;
+		cursor: pointer;
+		border-radius: 6px;
+		transition: all 0.2s;
+	}
+
+	.lang-btn:hover {
+		color: #fff;
+	}
+
+	.lang-btn.active {
+		background: var(--accent-color);
+		color: #000;
+	}
+
+	/* --- SOPORTE FULLSCREEN FOCUS MODO (PANTALLA COMPLETA) --- */
+	:fullscreen {
+		background: #000000 !important;
+	}
+
+	:fullscreen .app-container {
+		justify-content: center;
+		padding: 40px;
+	}
+
+	:fullscreen .parallax-wrapper {
+		max-width: none !important;
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	/* Ocultar / desvanecer elementos secundarios en fullscreen */
+	:fullscreen .app-header,
+	:fullscreen .hamburger-trigger {
+		opacity: 0.05;
+		transition: opacity 0.3s;
+	}
+
+	:fullscreen .app-header:hover,
+	:fullscreen .hamburger-trigger:hover {
+		opacity: 1;
+	}
+
+	:fullscreen .toast-tip {
+		display: none !important;
+	}
+
+	/* Escalar Reloj Principal sin segundos */
+	:fullscreen #view-clock,
+	:fullscreen #view-world-clock {
+		--card-width: 20vw;
+		--card-height: 27vw;
+		--card-font-size: 13vw;
+		--card-radius: 2vw;
+	}
+
+	:fullscreen #view-clock .colon,
+	:fullscreen #view-world-clock .colon {
+		font-size: 13vw;
+		transform: translateY(-1vw);
+	}
+
+	/* Ajustar Reloj Principal con segundos activos */
+	:fullscreen #view-clock:has(#clock-s-group:not([style*="display: none"])) {
+		--card-width: 12vw;
+		--card-height: 16vw;
+		--card-font-size: 7.8vw;
+		--card-radius: 1.2vw;
+	}
+
+	:fullscreen #view-clock:has(#clock-s-group:not([style*="display: none"])) .colon {
+		font-size: 8vw;
+		transform: translateY(-0.5vw);
+	}
+
+	/* Ajustar Reloj Mundial con segundos activos */
+	:fullscreen #view-world-clock:has(#world-clock-s-group:not([style*="display: none"])) {
+		--card-width: 12vw;
+		--card-height: 16vw;
+		--card-font-size: 7.8vw;
+		--card-radius: 1.2vw;
+	}
+
+	:fullscreen #view-world-clock:has(#world-clock-s-group:not([style*="display: none"])) .colon {
+		font-size: 8vw;
+		transform: translateY(-0.5vw);
+	}
+
+	/* Cronómetro (Stopwatch - 6 cards) */
+	:fullscreen #view-stopwatch {
+		--card-width: 12vw;
+		--card-height: 16vw;
+		--card-font-size: 7.8vw;
+		--card-radius: 1.2vw;
+	}
+
+	:fullscreen #view-stopwatch .colon {
+		font-size: 8vw;
+		transform: translateY(-0.5vw);
+	}
+
+	:fullscreen #view-stopwatch .controls-row {
+		margin-top: 3rem;
+	}
+
+	:fullscreen #view-stopwatch .laps-wrapper {
+		max-height: 250px;
+		max-width: 500px;
+		margin-top: 3rem;
+	}
+
+	/* Pomodoro y Timer (Escalar el aro de progreso y sus cards internas) */
+	:fullscreen #view-pomodoro .progress-ring-container,
+	:fullscreen #view-timer .progress-ring-container {
+		transform: scale(2.0);
+		margin: 80px 0;
+	}
+
+	:fullscreen #view-pomodoro .controls-row,
+	:fullscreen #view-timer .controls-row {
+		margin-top: 3rem;
+	}
+
+	:fullscreen #view-pomodoro .presets-row,
+	:fullscreen #view-timer .presets-row {
+		margin-top: 2rem;
+	}
 </style>
