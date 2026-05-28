@@ -31,7 +31,7 @@ const { id, label, transitionName } = Astro.props;
 		--card-width: 120px;
 		--card-height: 160px;
 		--card-font-size: 7.5rem;
-		--card-radius: 18px;
+		--card-radius: var(--flip-radius, 18px);
 	}
 
 	.flip-card-wrapper {
@@ -46,8 +46,7 @@ const { id, label, transitionName } = Astro.props;
 		width: var(--card-width);
 		height: var(--card-height);
 		perspective: 600px;
-		box-shadow: 0 20px 45px var(--shadow-color), 
-		            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+		box-shadow: var(--flip-shadow, 0 20px 45px var(--shadow-color), inset 0 1px 0 rgba(255, 255, 255, 0.1));
 		border-radius: var(--card-radius);
 		transition: transform 0.1s ease-out;
 	}
@@ -86,8 +85,8 @@ const { id, label, transitionName } = Astro.props;
 		font-size: var(--card-font-size);
 		font-weight: 800;
 		color: var(--flip-text);
-		font-family: var(--font-sans);
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+		font-family: var(--font-mono);
+		text-shadow: var(--text-glow, 0 2px 4px rgba(0, 0, 0, 0.2));
 	}
 
 	/* Mitad superior */

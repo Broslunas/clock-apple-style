@@ -15,15 +15,211 @@ let currentLang = 'es';
 let t = languages.es;
 
 // --- BASE DE DATOS DE TEMAS PREDEFINIDOS ---
+// --- BASE DE DATOS DE TEMAS PREDEFINIDOS ---
 const themes = [
-    { name: "🍎 Mac Classic", bg: "linear-gradient(135deg, #0e0e10, #17171a)", card: "#2c2c2e", text: "#ffffff", pageText: "#ffffff", accent: "#ff9500" },
-    { name: "✨ macOS Sonoma", bg: "linear-gradient(135deg, #b893f0, #e8a0ab, #89bde0)", card: "rgba(255,255,255,0.76)", text: "#1c1c1f", pageText: "#ffffff", accent: "#5e5ce6" },
-    { name: "⌚ watchOS Ultra", bg: "linear-gradient(135deg, #000000, #0a0a0a)", card: "#161617", text: "#ff453a", pageText: "#ff453a", accent: "#ff453a" },
-    { name: "🍊 Hermès Special", bg: "linear-gradient(135deg, #111112, #212124)", card: "#ff9500", text: "#000000", pageText: "#ff9500", accent: "#ff9500" },
-    { name: "🧊 Glass Minimal", bg: "linear-gradient(135deg, #e5e5ea, #d1d1d6)", card: "rgba(255, 255, 255, 0.8)", text: "#1d1d1f", pageText: "#1d1d1f", accent: "#007aff" },
-    { name: "🌌 iOS Aurora", bg: "linear-gradient(135deg, #0a1128, #1c0a35)", card: "rgba(255,255,255,0.12)", text: "#ffffff", pageText: "#f4f4f5", accent: "#bf5af2" },
-    { name: "🎨 Apple Arcade", bg: "linear-gradient(135deg, #ff2d55, #ff9500)", card: "#ffffff", text: "#ff2d55", pageText: "#ffffff", accent: "#ff2d55" },
-    { name: "🏁 Stealth Dark", bg: "linear-gradient(135deg, #000000, #040405)", card: "#0a0a0b", text: "rgba(255,255,255,0.22)", pageText: "rgba(255,255,255,0.45)", accent: "#8e8e93" }
+    { 
+        name: "🍎 Mac Classic", 
+        bg: "linear-gradient(135deg, #0e0e10, #17171a)", 
+        card: "#2c2c2e", 
+        text: "#ffffff", 
+        pageText: "#ffffff", 
+        accent: "#ff9500",
+        fontSans: "'Outfit', sans-serif",
+        fontMono: "'JetBrains Mono', monospace",
+        radius: "18px"
+    },
+    { 
+        name: "✨ macOS Sonoma", 
+        bg: "linear-gradient(135deg, #b893f0, #e8a0ab, #89bde0)", 
+        card: "rgba(255,255,255,0.76)", 
+        text: "#1c1c1f", 
+        pageText: "#ffffff", 
+        accent: "#5e5ce6",
+        fontSans: "'Outfit', sans-serif",
+        fontMono: "'Outfit', sans-serif",
+        radius: "20px",
+        shadow: "0 8px 32px 0 rgba(31, 38, 135, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.45)",
+        border: "rgba(255, 255, 255, 0.4)"
+    },
+    { 
+        name: "⌚ watchOS Ultra", 
+        bg: "linear-gradient(135deg, #000000, #0a0a0a)", 
+        card: "#161617", 
+        text: "#ff453a", 
+        pageText: "#ff453a", 
+        accent: "#ff453a",
+        fontSans: "'Outfit', sans-serif",
+        fontMono: "'JetBrains Mono', monospace",
+        radius: "12px"
+    },
+    { 
+        name: "🍊 Hermès Special", 
+        bg: "linear-gradient(135deg, #111112, #212124)", 
+        card: "#ff9500", 
+        text: "#000000", 
+        pageText: "#ff9500", 
+        accent: "#ff9500",
+        fontSans: "'Outfit', sans-serif",
+        fontMono: "'Outfit', sans-serif",
+        radius: "18px"
+    },
+    { 
+        name: "🧊 Glass Minimal", 
+        bg: "linear-gradient(135deg, #e5e5ea, #d1d1d6)", 
+        card: "rgba(255, 255, 255, 0.8)", 
+        text: "#1d1d1f", 
+        pageText: "#1d1d1f", 
+        accent: "#007aff",
+        fontSans: "'Outfit', sans-serif",
+        fontMono: "'Outfit', sans-serif",
+        radius: "20px",
+        shadow: "0 8px 32px 0 rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5)",
+        border: "rgba(255,255,255,0.6)"
+    },
+    { 
+        name: "🌌 iOS Aurora", 
+        bg: "linear-gradient(135deg, #0a1128, #1c0a35)", 
+        card: "rgba(255,255,255,0.12)", 
+        text: "#ffffff", 
+        pageText: "#f4f4f5", 
+        accent: "#bf5af2",
+        fontSans: "'Outfit', sans-serif",
+        fontMono: "'Outfit', sans-serif",
+        radius: "18px",
+        shadow: "0 8px 32px 0 rgba(0,0,0,0.37), inset 0 1px 0 rgba(255,255,255,0.1)"
+    },
+    { 
+        name: "🎨 Apple Arcade", 
+        bg: "linear-gradient(135deg, #ff2d55, #ff9500)", 
+        card: "#ffffff", 
+        text: "#ff2d55", 
+        pageText: "#ffffff", 
+        accent: "#ff2d55",
+        fontSans: "'Outfit', sans-serif",
+        fontMono: "'Outfit', sans-serif",
+        radius: "18px"
+    },
+    { 
+        name: "🏁 Stealth Dark", 
+        bg: "linear-gradient(135deg, #000000, #040405)", 
+        card: "#0a0a0b", 
+        text: "rgba(255,255,255,0.22)", 
+        pageText: "rgba(255,255,255,0.45)", 
+        accent: "#8e8e93",
+        fontSans: "'Outfit', sans-serif",
+        fontMono: "'JetBrains Mono', monospace",
+        radius: "12px"
+    },
+    { 
+        name: "🔮 Cyberpunk Neon", 
+        bg: "linear-gradient(135deg, #0d0015, #1d0030)", 
+        card: "rgba(29, 0, 48, 0.65)", 
+        text: "#00f3ff", 
+        pageText: "#ff0055", 
+        accent: "#00f3ff", 
+        fontSans: "'Outfit', sans-serif", 
+        fontMono: "'Share Tech Mono', monospace", 
+        radius: "8px", 
+        shadow: "0 0 20px rgba(255, 0, 85, 0.3), 0 0 40px rgba(0, 243, 255, 0.15), inset 0 0 10px rgba(0, 243, 255, 0.4)", 
+        glow: "0 0 8px #00f3ff, 0 0 20px rgba(0, 243, 255, 0.3)", 
+        border: "1px solid #00f3ff", 
+        scanlines: "0"
+    },
+    { 
+        name: "📟 Retro CRT Terminal", 
+        bg: "linear-gradient(180deg, #050f05, #000000)", 
+        card: "#000000", 
+        text: "#33ff33", 
+        pageText: "#33ff33", 
+        accent: "#33ff33", 
+        fontSans: "'JetBrains Mono', monospace", 
+        fontMono: "'Press Start 2P', monospace", 
+        radius: "0px", 
+        shadow: "0 0 15px rgba(51, 255, 51, 0.2), inset 0 0 5px rgba(51, 255, 51, 0.4)", 
+        glow: "0 0 6px #33ff33, 0 0 12px rgba(51, 255, 51, 0.3)", 
+        border: "1px solid #33ff33", 
+        scanlines: "0.15"
+    },
+    { 
+        name: "🏛️ Royal Walnut", 
+        bg: "linear-gradient(135deg, #111e15, #08100b)", 
+        card: "#261b15", 
+        text: "#f4ebd0", 
+        pageText: "#d4af37", 
+        accent: "#d4af37", 
+        fontSans: "'Cinzel', serif", 
+        fontMono: "'Cinzel', serif", 
+        radius: "4px", 
+        shadow: "0 15px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(212, 175, 55, 0.25)", 
+        border: "1px solid rgba(212, 175, 55, 0.4)"
+    },
+    { 
+        name: "🍵 Zen Matcha", 
+        bg: "linear-gradient(135deg, #d3e4cd, #adc2a9)", 
+        card: "rgba(255, 255, 255, 0.9)", 
+        text: "#3a5a40", 
+        pageText: "#3a5a40", 
+        accent: "#588157", 
+        fontSans: "'Outfit', sans-serif", 
+        fontMono: "'Outfit', sans-serif", 
+        radius: "28px", 
+        shadow: "0 10px 30px rgba(58, 90, 64, 0.08)", 
+        border: "rgba(58, 90, 64, 0.1)"
+    },
+    { 
+        name: "🍭 Bubblegum Pop", 
+        bg: "linear-gradient(135deg, #ff9a9e, #fecfef)", 
+        card: "rgba(255, 255, 255, 0.85)", 
+        text: "#ff4f79", 
+        pageText: "#ff4f79", 
+        accent: "#4fc3f7", 
+        fontSans: "'Outfit', sans-serif", 
+        fontMono: "'Outfit', sans-serif", 
+        radius: "36px", 
+        shadow: "0 15px 30px rgba(255, 79, 121, 0.12)", 
+        border: "rgba(255, 79, 121, 0.2)"
+    },
+    { 
+        name: "🌋 Lava Flow", 
+        bg: "linear-gradient(135deg, #140707, #2c0e0e)", 
+        card: "rgba(30, 20, 20, 0.85)", 
+        text: "#ff5500", 
+        pageText: "#ff5500", 
+        accent: "#ff2200", 
+        fontSans: "'Syne', sans-serif", 
+        fontMono: "'JetBrains Mono', monospace", 
+        radius: "12px", 
+        shadow: "0 0 20px rgba(255, 34, 0, 0.25), 0 0 40px rgba(255, 85, 0, 0.1), inset 0 0 10px rgba(255, 85, 0, 0.3)", 
+        glow: "0 0 8px #ff5500, 0 0 20px rgba(255, 85, 0, 0.25)", 
+        border: "1px solid #ff5500"
+    },
+    { 
+        name: "☕ Cozy Espresso", 
+        bg: "linear-gradient(135deg, #2d241e, #1a1412)", 
+        card: "#3d3029", 
+        text: "#f5e6d3", 
+        pageText: "#d9b48f", 
+        accent: "#d9b48f", 
+        fontSans: "'Outfit', sans-serif", 
+        fontMono: "'Outfit', sans-serif", 
+        radius: "16px", 
+        shadow: "0 12px 24px rgba(0,0,0,0.5)", 
+        border: "rgba(255,255,255,0.04)"
+    },
+    { 
+        name: "❄️ Arctic Frost", 
+        bg: "linear-gradient(135deg, #bfe3f2, #eef7fa, #9bcce3)", 
+        card: "rgba(255, 255, 255, 0.65)", 
+        text: "#1c5b73", 
+        pageText: "#1c5b73", 
+        accent: "#007aff", 
+        fontSans: "'Outfit', sans-serif", 
+        fontMono: "'JetBrains Mono', monospace", 
+        radius: "16px", 
+        shadow: "0 8px 32px rgba(28, 91, 115, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5)", 
+        glow: "0 0 8px rgba(255,255,255,0.8)", 
+        border: "rgba(255,255,255,0.4)"
+    }
 ];
 
 // --- CONTROL DE ESTADO GLOBAL DE LA APP PERSISTENTE ---
@@ -168,6 +364,15 @@ function applyTheme(theme) {
     document.documentElement.style.setProperty('--flip-text', theme.text);
     document.documentElement.style.setProperty('--text-color', theme.pageText);
     document.documentElement.style.setProperty('--accent-color', theme.accent);
+
+    // Custom typography, styling & CRT scanline properties
+    document.documentElement.style.setProperty('--font-sans', theme.fontSans || "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif");
+    document.documentElement.style.setProperty('--font-mono', theme.fontMono || "'JetBrains Mono', monospace");
+    document.documentElement.style.setProperty('--flip-radius', theme.radius || "18px");
+    document.documentElement.style.setProperty('--flip-shadow', theme.shadow || "0 20px 45px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1)");
+    document.documentElement.style.setProperty('--text-glow', theme.glow || "0 2px 4px rgba(0, 0, 0, 0.2)");
+    document.documentElement.style.setProperty('--scanline-opacity', theme.scanlines || "0");
+    document.documentElement.style.setProperty('--card-border', theme.border || "rgba(255, 255, 255, 0.06)");
 }
 
 function setThemeIndex(idx) {
@@ -1104,6 +1309,18 @@ document.addEventListener('astro:page-load', () => {
         });
     }
 
+    // Sync Custom Theme inputs if state has customTheme
+    if (state.customTheme) {
+        if (document.getElementById('custom-bg-1')) document.getElementById('custom-bg-1').value = state.customTheme.bg1 || '#1c1c1e';
+        if (document.getElementById('custom-bg-2')) document.getElementById('custom-bg-2').value = state.customTheme.bg2 || '#111112';
+        if (document.getElementById('custom-card-color')) document.getElementById('custom-card-color').value = state.customTheme.cardColor || '#2c2c2e';
+        if (document.getElementById('custom-text-color')) document.getElementById('custom-text-color').value = state.customTheme.textColor || '#ffffff';
+        if (document.getElementById('custom-card-opacity')) document.getElementById('custom-card-opacity').value = state.customTheme.opacityVal || '95';
+        if (document.getElementById('custom-font-select')) document.getElementById('custom-font-select').value = state.customTheme.fontVal || 'outfit';
+        if (document.getElementById('custom-radius-select')) document.getElementById('custom-radius-select').value = state.customTheme.radiusVal || '18px';
+        if (document.getElementById('custom-style-select')) document.getElementById('custom-style-select').value = state.customTheme.styleVal || 'default';
+    }
+
     // Custom theme builder
     const applyCustomBtn = document.getElementById('apply-custom-theme-btn');
     if (applyCustomBtn) {
@@ -1116,14 +1333,84 @@ document.addEventListener('astro:page-load', () => {
             const r = parseInt(cardColor.slice(1, 3), 16);
             const g = parseInt(cardColor.slice(3, 5), 16);
             const b = parseInt(cardColor.slice(5, 7), 16);
+
+            const fontVal = document.getElementById('custom-font-select').value;
+            const radiusVal = document.getElementById('custom-radius-select').value;
+            const styleVal = document.getElementById('custom-style-select').value;
+
+            // Build font values
+            let fontSans = "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+            let fontMono = "'JetBrains Mono', monospace";
+            if (fontVal === 'mono') {
+                fontMono = "'JetBrains Mono', monospace";
+            } else if (fontVal === 'cinzel') {
+                fontSans = "'Cinzel', serif";
+                fontMono = "'Cinzel', serif";
+            } else if (fontVal === 'playfair') {
+                fontSans = "'Playfair Display', serif";
+                fontMono = "'Playfair Display', serif";
+            } else if (fontVal === 'retro') {
+                fontSans = "'JetBrains Mono', monospace";
+                fontMono = "'Press Start 2P', monospace";
+            } else if (fontVal === 'cyber') {
+                fontSans = "'Outfit', sans-serif";
+                fontMono = "'Share Tech Mono', monospace";
+            } else if (fontVal === 'syne') {
+                fontSans = "'Syne', sans-serif";
+                fontMono = "'Syne', sans-serif";
+            }
+
+            // Build style details based on styleVal
+            let shadow = "0 20px 45px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1)";
+            let glow = "0 2px 4px rgba(0, 0, 0, 0.2)";
+            let scanlines = "0";
+            let border = "rgba(255, 255, 255, 0.06)";
+
+            if (styleVal === 'neon') {
+                shadow = "0 0 20px rgba(255, 0, 85, 0.35), 0 0 40px rgba(0, 243, 255, 0.18), inset 0 0 10px rgba(0, 243, 255, 0.4)";
+                glow = "0 0 8px #00f3ff, 0 0 20px rgba(0, 243, 255, 0.3)";
+                border = "1px solid #00f3ff";
+            } else if (styleVal === 'lava') {
+                shadow = "0 0 20px rgba(255, 34, 0, 0.35), 0 0 40px rgba(255, 85, 0, 0.18), inset 0 0 10px rgba(255, 85, 0, 0.4)";
+                glow = "0 0 8px #ff5500, 0 0 20px rgba(255, 85, 0, 0.3)";
+                border = "1px solid #ff5500";
+            } else if (styleVal === 'crt') {
+                shadow = "0 0 15px rgba(51, 255, 51, 0.25), inset 0 0 5px rgba(51, 255, 51, 0.4)";
+                glow = "0 0 6px #33ff33, 0 0 12px rgba(51, 255, 51, 0.3)";
+                border = "1px solid #33ff33";
+                scanlines = "0.15";
+            } else if (styleVal === 'glass') {
+                shadow = "0 8px 32px 0 rgba(31, 38, 135, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3)";
+                border = "1px solid rgba(255, 255, 255, 0.25)";
+            }
+
             applyCustomTheme({
                 name: "Personalizado",
                 bg: `linear-gradient(135deg, ${bg1}, ${bg2})`,
                 card: `rgba(${r}, ${g}, ${b}, ${opacity})`,
                 text: textColor,
                 pageText: textColor,
-                accent: textColor
+                accent: textColor,
+                fontSans,
+                fontMono,
+                radius: radiusVal,
+                shadow,
+                glow,
+                scanlines,
+                border,
+                // store original selections for repopulating UI:
+                bg1,
+                bg2,
+                cardColor,
+                textColor,
+                opacityVal: document.getElementById('custom-card-opacity').value,
+                fontVal,
+                radiusVal,
+                styleVal
             });
+
+            // Uncheck any active preset cards in the grid since custom is now active
+            document.querySelectorAll('#presets-grid .theme-card').forEach(c => c.classList.remove('active'));
         };
     }
 

@@ -217,6 +217,38 @@ const t = languages[locale];
                     <span>{t.settings_custom_opacity}</span>
                     <input type="range" id="custom-card-opacity" min="10" max="100" value="95" class="range-slider" />
                 </div>
+                <div class="setting-row" style="margin-top: 10px; background: transparent; padding: 0;">
+                    <span>{t.settings_custom_font}</span>
+                    <select id="custom-font-select" class="select-input">
+                        <option value="outfit">Outfit (Modern)</option>
+                        <option value="mono">JetBrains Mono (Tech)</option>
+                        <option value="cinzel">Cinzel (Elegant)</option>
+                        <option value="playfair">Playfair Display (Classic)</option>
+                        <option value="retro">Press Start 2P (Retro)</option>
+                        <option value="cyber">Share Tech Mono (Cyber)</option>
+                        <option value="syne">Syne (Geometric)</option>
+                    </select>
+                </div>
+                <div class="setting-row" style="margin-top: 10px; background: transparent; padding: 0;">
+                    <span>{t.settings_custom_radius}</span>
+                    <select id="custom-radius-select" class="select-input">
+                        <option value="0px">Square (0px)</option>
+                        <option value="8px">Subtle (8px)</option>
+                        <option value="18px" selected>Standard (18px)</option>
+                        <option value="28px">Rounded (28px)</option>
+                        <option value="40px">Pill (40px)</option>
+                    </select>
+                </div>
+                <div class="setting-row" style="margin-top: 10px; background: transparent; padding: 0;">
+                    <span>{t.settings_custom_style}</span>
+                    <select id="custom-style-select" class="select-input">
+                        <option value="default" selected>Default</option>
+                        <option value="neon">Neon Cyan/Pink</option>
+                        <option value="lava">Lava Flow</option>
+                        <option value="crt">Retro CRT</option>
+                        <option value="glass">Glossy Glassmorphic</option>
+                    </select>
+                </div>
                 <button id="apply-custom-theme-btn" class="action-btn secondary-btn" style="margin-top: 12px;">{t.settings_custom_apply}</button>
             </div>
         </section>
