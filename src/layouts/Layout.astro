@@ -129,6 +129,16 @@ const jsonLd = JSON.stringify({
 		<!-- Plausible Analytics (privacy-friendly) -->
 		<script defer src="https://plausible.io/js/script.js" data-domain="clock.broslunas.com"></script>
 
+		<!-- Google tag (gtag.js) -->
+		<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZS3YKY3GGR" is:inline></script>
+		<script is:inline>
+		  window.dataLayer = window.dataLayer || [];
+		  function gtag(){dataLayer.push(arguments);}
+		  gtag('js', new Date());
+
+		  gtag('config', 'G-ZS3YKY3GGR');
+		</script>
+
 		<!-- JSON-LD Structured Data -->
 		<script type="application/ld+json" set:html={jsonLd} />
 		
